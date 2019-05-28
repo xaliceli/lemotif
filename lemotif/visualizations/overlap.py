@@ -2,35 +2,55 @@
 overlap.py
 Overlap visualization.
 """
+from itertools import product
+
 import cv2
 import numpy as np
 import random
 
-from visualizations.utils import fill_color
+from visualizations.utils import fill_color, bg_mask, fill_canvas
 
-def overlap(topics, emotions, icons, colors, size, rand_color=True, icon_ratio=0.1):
+
+def overlap(topics, emotions, icons, colors, size,
+            background=(255, 255, 255), icon_ratio=0.1, size_flux=0.25, rand_alpha=True, passes=10, mask_all=True,
+            border_shape=False, border_color=None, inc_floor=0, inc_ceiling=1):
     if not set(topics) <= set(icons.keys()):
         return 'Error: Topics outside of presets.'
     if not set(emotions) <= set(colors.keys()):
         return 'Error: Emotions outside of presets.'
-    icon_size = int(min(size) * icon_ratio)
-    icons = [cv2.resize(icons[topic], (icon_size, icon_size)) for topic in topics]
+    base_size = int(min(size) * icon_ratio)
+    icons_resized = [cv2.resize(icons[topic], (base_size, base_size)) for topic in topics]
     colors = [colors[emotion] for emotion in emotions]
-    color_icons = [fill_color(icon, color['rgb']) for icon, color in zip(icons, colors)]
+    color_icons = [fill_color(icon, color['rgb'], border_color) for icon, color in product(icons_resized, colors)]
 
-    canvas, complete = np.ones((size[0], size[1], 3))*255, False
-    start = [random.randint(0, icon_size//2), random.randint(0, icon_size//2)]
-    while not complete:
-        icon = random.choice(color_icons)
-        mask = icon[:, :] != [255, 255, 255]
-        canvas[start[0]:start[0] + icon_size, start[1]:start[1] + icon_size][mask] = icon[mask]
-        increment = random.randint(0, icon_size)
-        if start[1] + increment + icon_size < canvas.shape[1]:
-            start[1] += increment
-        elif start[0] + increment + icon_size < canvas.shape[0]:
-            start[0] += increment
-            start[1] = increment
-        else:
-            complete = True
+    canvas = np.zeros((size[0], size[1], 3))
+    canvas[..., :] = background
+    for p in range(passes):
+        complete = False
+        start = [random.randint(0, base_size // 4), random.randint(0, base_size // 4)]
+        while not complete:
+            icon, icon_size = random.choice(color_icons), max(1, int(base_size * np.random.normal(1, size_flux)))
+            icon_resized = cv2.resize(icon, (icon_size, icon_size), interpolation=cv2.INTER_NEAREST)
+            adj_y = min(int(start[0] * np.random.normal(1, .025)), size[0] - icon_size)
+            mask = bg_mask(icon_resized, colors, border_color) if mask_all else None
+            increment = random.randint(int(inc_floor * icon_size), int(icon_size * inc_ceiling))
+            alpha = random.random() if rand_alpha else 0
+            if start[1] + icon_size < canvas.shape[1]:
+                canvas = fill_canvas(canvas, background, mask, size, icon_resized, start, adj_y, icon_size, alpha)
+                start[1] += increment
+            elif start[0] + icon_size < canvas.shape[0]:
+                start[0] += increment
+                start[1] = increment
+                canvas = fill_canvas(canvas, background, mask, size, icon_resized, start, adj_y, icon_size, alpha)
+            else:
+                complete = True
+
+    if border_shape:
+        outline_mask = fill_color(cv2.resize(icons[random.choice(topics)], size), (0, 0, 0)) / 255
+        outline_mask = ~outline_mask.astype(bool)
+        final_canvas = np.ones((size[0], size[1], 3))
+        final_canvas[..., :] = background
+        final_canvas[outline_mask] = canvas[outline_mask]
+        canvas = final_canvas
 
     return canvas
