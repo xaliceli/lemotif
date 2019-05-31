@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Lemotif: Visual Journal</title>
+<link href='../static/stylesheet.css' rel='stylesheet'>
+</head>
+
+<body>
+    <main>
+    <div id='input'>
+        <h2>Subjects</h2>
+        {% for subject in subjects %}
+            <input type='checkbox' name='{{subject}}' value='{{subject}}'> {{subject}} <br>
+        {% endfor %}
+        <h2>Emotions</h2>
+        {% for emotion in emotions %}
+            <input type='checkbox' name='{{emotion}}' value='{{emotion}}'> {{emotion}} <br>
+        {% endfor %}
+    </div>
+    <div id='vis'>
+
+    </div>
+    </main>
+</body>
+
+</html>

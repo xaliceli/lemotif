@@ -9,7 +9,7 @@ import os
 import cv2
 
 from assets.colors import colors_dict
-from visualizations.overlap import overlap
+from lemotif.visualizations.overlap import overlap
 
 
 def load_assets(input_dir='../assets/'):

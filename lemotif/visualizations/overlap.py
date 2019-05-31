@@ -8,7 +8,7 @@ import cv2
 import numpy as np
 import random
 
-from visualizations.utils import fill_color, bg_mask, fill_canvas
+from lemotif.visualizations.utils import fill_color, bg_mask, fill_canvas
 
 
 def overlap(topics, emotions, icons, colors, size,
