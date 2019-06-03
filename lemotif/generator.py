@@ -39,10 +39,10 @@ def generate_visual(icons, colors, topics, emotions, algorithm, out='../output',
         algorithm (function): Algorithm to generate visual using.
     """
     outputs = [algorithm(t, e, icons, colors, size, **args) for t, e in zip(topics, emotions)]
-    if not os.path.isdir(out):
+    if out is not None and not os.path.isdir(out):
         os.mkdir(out)
-    for i, vis in enumerate(outputs):
-        cv2.imwrite(os.path.join(out, str(i) + '.png'), vis)
+        for i, vis in enumerate(outputs):
+            cv2.imwrite(os.path.join(out, str(i) + '.png'), vis)
     return outputs
 
 

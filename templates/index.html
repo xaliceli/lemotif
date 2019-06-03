@@ -3,23 +3,38 @@
 <head>
 <title>Lemotif: Visual Journal</title>
 <link href='../static/stylesheet.css' rel='stylesheet'>
+<link href="https://fonts.googleapis.com/css?family=Open+Sans|Playfair+Display&display=swap" rel="stylesheet">
 </head>
 
 <body>
     <main>
-    <div id='input'>
-        <h2>Subjects</h2>
-        {% for subject in subjects %}
-            <input type='checkbox' name='{{subject}}' value='{{subject}}'> {{subject}} <br>
-        {% endfor %}
-        <h2>Emotions</h2>
-        {% for emotion in emotions %}
-            <input type='checkbox' name='{{emotion}}' value='{{emotion}}'> {{emotion}} <br>
-        {% endfor %}
-    </div>
-    <div id='vis'>
-
-    </div>
+        <h1>Lemotif: Visual Journal</h1>
+        <div class="container">
+            <div id='input'>
+                <form method='post' action='/generate'>
+                <h2>Subjects</h2>
+                    <ul id='subjects-list' class="checklist">
+                {% for subject in subjects %}
+                        <li><input type='checkbox' name='subjects' id={{subject}} value='{{subject}}'>
+                            <label for="{{subject}}">{{subject}}</label></li>
+                {% endfor %}
+                    </ul>
+                <h2>Emotions</h2>
+                    <ul id='emotions-list' class="checklist">
+                {% for emotion in emotions %}
+                        <li><input type='checkbox' name='emotions' id={{emotion}} value='{{emotion}}'>
+                            <label for="{{emotion}}">{{emotion}}</label></li>
+                {% endfor %}
+                    </ul>
+                <input type="submit" value=">> Generate Motif">
+                </form>
+            </div>
+            <div id='vis'>
+                {% if image %}
+                    <img src='{{image}}'>
+                {% endif %}
+            </div>
+        </div>
     </main>
 </body>
 
