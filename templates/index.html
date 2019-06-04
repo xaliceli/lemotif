@@ -29,39 +29,51 @@
                 <h2>Settings</h2>
                     <div class="slider-container">
                         Canvas Shape<br>
-                        <input type="radio" id="border_shape_off" name="border_shape" value="False" checked>
-                        <label for="border_shape_off">Off</label>
-                        <input type="radio" id="border_shape_on" name="border_shape" value="True">
-                        <label for="border_shape_on">On</label>
+                        <input type="radio" id="border_shape_off" name="border_shape" value="False">
+                        <label for="border_shape_off">Square</label>
+                        <input type="radio" id="border_shape_on" name="border_shape" value="True" checked>
+                        <label for="border_shape_on">Subject</label>
                     </div>
                     <div class="slider-container">
                         <label for="icon_ratio">Icon Size</label><br>
-                        <input type="range" min="0" max="100" value="10" class="slider" id="icon_ratio" name="id_ratio">
+                        <input type="range" min="1" max="100" value="10" class="slider" id="icon_ratio" name="icon_ratio"
+                               oninput="icon_ratio_out.value = icon_ratio.value">
+                        <output name="icon_ratio_out" id="icon_ratio_out">10</output>
                     </div>
                     <div class="slider-container">
                         <label for="size_flux">Icon Size Flux</label><br>
-                        <input type="range" min="0" max="100" value="33" class="slider" id="size_flux" name="size_flux">
+                        <input type="range" min="0" max="100" value="33" class="slider" id="size_flux" name="size_flux"
+                               oninput="size_flux_out.value = size_flux.value">
+                        <output name="size_flux_out" id="size_flux_out">33</output>
                     </div>
                     <div class="slider-container">
                         <label for="passes">Fill Density</label><br>
-                        <input type="range" min="0" max="100" value="10" class="slider" id="passes" name="passes">
+                        <input type="range" min="1" max="20" value="10" class="slider" id="passes" name="passes"
+                               oninput="passes_out.value = passes.value">
+                        <output name="passes_out" id="passes_out">10</output>
                     </div>
                     <div class="slider-container">
                         <label for="inc_floor">Min Icon Distance</label><br>
-                        <input type="range" min="0" max="100" value="50" class="slider" id="inc_floor" name="inc_floor">
+                        <input type="range" min="0" max="100" value="50" class="slider" id="inc_floor" name="inc_floor"
+                               oninput="inc_floor_out.value = inc_floor.value">
+                        <output name="inc_floor_out" id="inc_floor_out">50</output>
                     </div>
                     <div class="slider-container">
                         <label for="inc_ceiling">Max Icon Distance</label><br>
-                        <input type="range" min="0" max="100" value="75" class="slider" id="inc_ceiling" name="inc_ceiling">
+                        <input type="range" min="0" max="100" value="75" class="slider" id="inc_ceiling" name="inc_ceiling"
+                               oninput="inc_ceiling_out.value = inc_ceiling.value">
+                        <output name="inc_ceiling_out" id="inc_ceiling_out">75</output>
                     </div>
                     <div class="slider-container">
                         <label for="border_color">Border Color</label>
-                        <input type="radio" id="border_color_off" name="border_color_toggle" value="False" checked>
+                        <input type="radio" id="border_color_off" name="border_color_toggle" value="False">
                         <label for="border_color_off">Off</label>
-                        <input type="radio" id="border_color_on" name="border_color_toggle" value="True">
+                        <input type="radio" id="border_color_on" name="border_color_toggle" value="True" checked>
                         <label for="border_color_on">On</label>
                         <br>
-                        <input type="range" min="0" max="100" value="0" class="slider" id="border_color">
+                        <input type="range" min="0" max="100" value="100" class="slider" id="border_color"
+                               oninput="border_color_out.value = border_color.value">
+                        <output name="border_color_out" id="border_color_out">100</output>
                     </div>
                 </form>
             </div>

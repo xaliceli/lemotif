@@ -14,6 +14,7 @@ h1, h2, h3 {
 
 main {
     padding: 2rem 4rem;
+    font-size: .95rem;
 }
 
 .blue {
@@ -123,6 +124,31 @@ ul.checklist li input[type="checkbox"] {
     height: 1rem;
     background: #0037FF;
     cursor: pointer;
+}
+
+.slider-container output {
+    color: #0037FF;
+    font-size: .8rem;
+}
+
+.slider-container input[type="radio"] {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    display: inline-block;
+    position: relative;
+    background-color: #ededed;
+    border: 0;
+    height: 1rem;
+    width: 1rem;
+    cursor: pointer;
+    outline: none;
+    margin: -1px 0 0 0;
+    vertical-align: middle;
+}
+
+.slider-container input[type="radio"]:checked {
+     background-color: #0037FF;
 }
 
 #vis input[type="submit"] {

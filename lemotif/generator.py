@@ -12,7 +12,7 @@ from assets.colors import colors_dict
 from lemotif.visualizations.overlap import overlap
 
 
-def load_assets(input_dir='assets'):
+def load_assets(input_dir='../assets'):
     """
     Loads icons and colors.
 
@@ -27,7 +27,7 @@ def load_assets(input_dir='assets'):
     return icons_dict, colors_dict
 
 
-def generate_visual(icons, colors, topics, emotions, algorithm, out='output', size=(500, 500), **args):
+def generate_visual(icons, colors, topics, emotions, algorithm, out='../output', size=(500, 500), **args):
     """
     Generates visualization based on inputs.
 
@@ -40,7 +40,7 @@ def generate_visual(icons, colors, topics, emotions, algorithm, out='output', si
     """
     outputs = [algorithm(t, e, icons, colors, size, **args) for t, e in zip(topics, emotions)]
     if out is not None:
-        if os.path.isdir(out):
+        if not os.path.isdir(out):
             os.mkdir(out)
         for i, vis in enumerate(outputs):
             cv2.imwrite(os.path.join(out, str(i) + '.png'), vis)
@@ -49,8 +49,8 @@ def generate_visual(icons, colors, topics, emotions, algorithm, out='output', si
 
 if __name__ == '__main__':
     icons, colors = load_assets()
-    topics = [['family', 'food'], ['exercise', 'health'], ['work', 'school']]
-    emotions = [['happy', 'satisfied'], ['proud', 'excited'], ['anxious', 'afraid']]
+    topics = [['sleep']]
+    emotions = [['happy', 'satisfied']]
 
     # Lemotif adjustable settings
     args = {}

@@ -47,15 +47,14 @@ def generate():
         args['border_color'] = 0.5
 
         for param in args.keys():
-            try:
-                val = request.form.getlist(param)[0]
+            results = request.form.getlist(param)
+            if len(results) > 0:
+                val = results[0]
                 if type(args[param]) is bool:
                     val = val == 'True'
                 else:
-                    val = float(val)/100 if val > 1 >= args[param] else val
+                    val = float(val)/100 if float(val) > 1 >= args[param] else int(val)
                 args[param] = val
-            except:
-                pass
         if request.form.getlist('border_color_toggle')[0] == 'False':
             args['border_color'] = None
 

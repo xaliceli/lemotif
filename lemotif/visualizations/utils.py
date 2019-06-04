@@ -19,8 +19,11 @@ def fill_color(shape, color, border_color=None, color_type='rgb'):
         color = [color[2], color[1], color[0]]
     # Flood fill interior region
     center = np.int32(np.mean(borders[:, [1, 0]], axis=0))
+    dist = borders - center
+    mean_dist = np.mean(dist, axis=0)
+    poly_center = np.int32(center - mean_dist)
     filled[..., 0] = shape
-    filled = cv2.floodFill(filled, None, (center[0], center[1]), color)[1]
+    filled = cv2.floodFill(filled, None, (poly_center[0], poly_center[1]), color)[1]
     if border_color is None:
         filled[shape != 255] = [255, 255, 255]
     else:
