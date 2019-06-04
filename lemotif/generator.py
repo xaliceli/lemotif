@@ -12,7 +12,7 @@ from assets.colors import colors_dict
 from lemotif.visualizations.overlap import overlap
 
 
-def load_assets(input_dir='../assets/'):
+def load_assets(input_dir='assets'):
     """
     Loads icons and colors.
 
@@ -27,7 +27,7 @@ def load_assets(input_dir='../assets/'):
     return icons_dict, colors_dict
 
 
-def generate_visual(icons, colors, topics, emotions, algorithm, out='../output', size=(500, 500), **args):
+def generate_visual(icons, colors, topics, emotions, algorithm, out='output', size=(500, 500), **args):
     """
     Generates visualization based on inputs.
 
@@ -39,8 +39,9 @@ def generate_visual(icons, colors, topics, emotions, algorithm, out='../output',
         algorithm (function): Algorithm to generate visual using.
     """
     outputs = [algorithm(t, e, icons, colors, size, **args) for t, e in zip(topics, emotions)]
-    if out is not None and not os.path.isdir(out):
-        os.mkdir(out)
+    if out is not None:
+        if os.path.isdir(out):
+            os.mkdir(out)
         for i, vis in enumerate(outputs):
             cv2.imwrite(os.path.join(out, str(i) + '.png'), vis)
     return outputs

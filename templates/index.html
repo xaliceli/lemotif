@@ -8,28 +8,66 @@
 
 <body>
     <main>
-        <h1>Lemotif: Visual Journal</h1>
         <div class="container">
             <div id='input'>
-                <form method='post' action='/generate'>
+                <h1>Lemotif: Visual Journal</h1>
+                <form method='post' id="inputs" action='/generate'>
                 <h2>Subjects</h2>
                     <ul id='subjects-list' class="checklist">
-                {% for subject in subjects %}
+                        {% for subject in subjects %}
                         <li><input type='checkbox' name='subjects' id={{subject}} value='{{subject}}'>
                             <label for="{{subject}}">{{subject}}</label></li>
-                {% endfor %}
+                        {% endfor %}
                     </ul>
                 <h2>Emotions</h2>
                     <ul id='emotions-list' class="checklist">
-                {% for emotion in emotions %}
+                        {% for emotion in emotions %}
                         <li><input type='checkbox' name='emotions' id={{emotion}} value='{{emotion}}'>
                             <label for="{{emotion}}">{{emotion}}</label></li>
-                {% endfor %}
+                        {% endfor %}
                     </ul>
-                <input type="submit" value=">> Generate Motif">
+                <h2>Settings</h2>
+                    <div class="slider-container">
+                        Canvas Shape<br>
+                        <input type="radio" id="border_shape_off" name="border_shape" value="False" checked>
+                        <label for="border_shape_off">Off</label>
+                        <input type="radio" id="border_shape_on" name="border_shape" value="True">
+                        <label for="border_shape_on">On</label>
+                    </div>
+                    <div class="slider-container">
+                        <label for="icon_ratio">Icon Size</label><br>
+                        <input type="range" min="0" max="100" value="10" class="slider" id="icon_ratio" name="id_ratio">
+                    </div>
+                    <div class="slider-container">
+                        <label for="size_flux">Icon Size Flux</label><br>
+                        <input type="range" min="0" max="100" value="33" class="slider" id="size_flux" name="size_flux">
+                    </div>
+                    <div class="slider-container">
+                        <label for="passes">Fill Density</label><br>
+                        <input type="range" min="0" max="100" value="10" class="slider" id="passes" name="passes">
+                    </div>
+                    <div class="slider-container">
+                        <label for="inc_floor">Min Icon Distance</label><br>
+                        <input type="range" min="0" max="100" value="50" class="slider" id="inc_floor" name="inc_floor">
+                    </div>
+                    <div class="slider-container">
+                        <label for="inc_ceiling">Max Icon Distance</label><br>
+                        <input type="range" min="0" max="100" value="75" class="slider" id="inc_ceiling" name="inc_ceiling">
+                    </div>
+                    <div class="slider-container">
+                        <label for="border_color">Border Color</label>
+                        <input type="radio" id="border_color_off" name="border_color_toggle" value="False" checked>
+                        <label for="border_color_off">Off</label>
+                        <input type="radio" id="border_color_on" name="border_color_toggle" value="True">
+                        <label for="border_color_on">On</label>
+                        <br>
+                        <input type="range" min="0" max="100" value="0" class="slider" id="border_color">
+                    </div>
                 </form>
             </div>
             <div id='vis'>
+                <input type="submit" value=">> Generate Motif" form="inputs">
+                <br>
                 {% if image %}
                     <img src='{{image}}'>
                 {% endif %}
