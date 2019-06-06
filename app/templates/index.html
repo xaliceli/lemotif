@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Lemotif: Visual Journal</title>
+<link href='../static/stylesheet.css' rel='stylesheet'>
+<link href="https://fonts.googleapis.com/css?family=Open+Sans|Playfair+Display&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <main>
+        <div class="container">
+            <div id='input'>
+                <h1>Lemotif: Visual Journal</h1>
+                <form method='post' id="inputs" action='/'>
+                <h2>Subjects</h2>
+                    <ul id='subjects-list' class="checklist">
+                        {% for subject in subjects %}
+                        <li><input type='checkbox' name='subjects' id={{subject}} value='{{subject}}'>
+                            <label for="{{subject}}">{{subject}}</label></li>
+                        {% endfor %}
+                    </ul>
+                <h2>Emotions</h2>
+                    <ul id='emotions-list' class="checklist">
+                        {% for emotion in emotions %}
+                        <li><input type='checkbox' name='emotions' id={{emotion}} value='{{emotion}}'>
+                            <label for="{{emotion}}">{{emotion}}</label></li>
+                        {% endfor %}
+                    </ul>
+                <h2>Settings</h2>
+                    <div class="slider-container">
+                        Canvas Shape<br>
+                        {% if settings['border_shape'] %}
+                        {% set check_true = 'checked' %}
+                        {% set check_false = '' %}
+                        {% else %}
+                        {% set check_true = '' %}
+                        {% set check_false = 'checked' %}
+                        {% endif %}
+                        <input type="radio" id="border_shape_off" name="border_shape" value="False" {{check_false}}>
+                        <label for="border_shape_off">Square</label>
+                        <input type="radio" id="border_shape_on" name="border_shape" value="True" {{check_true}}>
+                        <label for="border_shape_on">Subject</label>
+                    </div>
+                    <div class="slider-container">
+                        <label for="icon_ratio">Icon Size: Percent of Canvas Size</label><br>
+                        <input type="range" min="1" max="50" value={{(settings['icon_ratio']*100)|int}}
+                               class="slider" id="icon_ratio" name="icon_ratio"
+                               oninput="icon_ratio_out.value = icon_ratio.value + '%'">
+                        <output name="icon_ratio_out" id="icon_ratio_out">{{(settings['icon_ratio']*100)|int}}%</output>
+                    </div>
+                    <div class="slider-container">
+                        <label for="size_flux">Icon Size Flux: Standard Deviation of Icon Resizing Factor</label><br>
+                        <input type="range" min="0" max="100" value={{(settings['size_flux']*100)|int}}
+                               class="slider" id="size_flux" name="size_flux"
+                               oninput="size_flux_out.value = size_flux.value/100">
+                        <output name="size_flux_out" id="size_flux_out">{{settings['size_flux']}}</output>
+                    </div>
+                    <div class="slider-container">
+                        <label for="passes">Fill Density: Number of Passes Through Canvas</label><br>
+                        <input type="range" min="1" max="20" value={{(settings['passes'])|int}}
+                               class="slider" id="passes" name="passes"
+                               oninput="passes_out.value = passes.value">
+                        <output name="passes_out" id="passes_out">{{(settings['passes'])|int}}</output>
+                    </div>
+                    <div class="slider-container">
+                        <label for="inc_floor">Min Icon Distance: Percent of Icon Size</label><br>
+                        <input type="range" min="1" max="100" value={{(settings['inc_floor']*100)|int}}
+                               class="slider" id="inc_floor" name="inc_floor"
+                               oninput="inc_floor_out.value = inc_floor.value + '%'">
+                        <output name="inc_floor_out" id="inc_floor_out">{{(settings['inc_floor']*100)|int}}%</output>
+                    </div>
+                    <div class="slider-container">
+                        <label for="inc_ceiling">Max Icon Distance: Percent of Icon Size</label><br>
+                        <input type="range" min="1" max="100" value={{(settings['inc_ceiling']*100)|int}}
+                               class="slider" id="inc_ceiling" name="inc_ceiling"
+                               oninput="inc_ceiling_out.value = inc_ceiling.value + '%'">
+                        <output name="inc_ceiling_out" id="inc_ceiling_out">{{(settings['inc_ceiling']*100)|int}}%</output>
+                    </div>
+                    <div class="slider-container">
+                        <label for="border_color">Border Color: Relative Intensity</label>
+                        <!--<input type="radio" id="border_color_off" name="border_color_toggle" value="False">-->
+                        <!--<label for="border_color_off">Off</label>-->
+                        <!--<input type="radio" id="border_color_on" name="border_color_toggle" value="True" checked>-->
+                        <!--<label for="border_color_on">On</label>-->
+                        <!--<br>-->
+                        <input type="range" min="1" max="100" value={{(settings['border_color']*100)|int}}
+                               class="slider" id="border_color" name="border_color"
+                               oninput="border_color_out.value = border_color.value + '%'">
+                        <output name="border_color_out" id="border_color_out">{{(settings['border_color']*100)|int}}%</output>
+                    </div>
+                </form>
+            </div>
+            <div id='vis'>
+                <input type="submit" value=">> Generate Motif" form="inputs">
+                <br>
+                {% if image %}
+                    <img src='{{image}}'>
+                {% endif %}
+            </div>
+        </div>
+    </main>
+</body>
+
+</html>

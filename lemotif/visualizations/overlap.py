@@ -13,7 +13,7 @@ from lemotif.visualizations.utils import fill_color, bg_mask, fill_canvas
 
 def overlap(topics, emotions, icons, colors, size,
             background=(255, 255, 255), icon_ratio=0.1, size_flux=0.25, rand_alpha=True, passes=10, mask_all=True,
-            border_shape=False, border_color=None, inc_floor=0, inc_ceiling=1):
+            border_shape=False, border_color=None, inc_floor=0, inc_ceiling=1, **kwargs):
     if not set(topics) <= set(icons.keys()):
         return 'Error: Topics outside of presets.'
     if not set(emotions) <= set(colors.keys()):
@@ -46,7 +46,7 @@ def overlap(topics, emotions, icons, colors, size,
                 complete = True
 
     if border_shape:
-        outline_mask = fill_color(cv2.resize(icons[random.choice(topics)], size), (0, 0, 0)) / 255
+        outline_mask = fill_color(cv2.resize(icons[random.choice(topics)], size), (0, 0, 0), border_color) / 255
         outline_mask = ~outline_mask.astype(bool)
         final_canvas = np.ones((size[0], size[1], 3))
         final_canvas[..., :] = background

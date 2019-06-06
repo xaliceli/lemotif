@@ -74,7 +74,7 @@ if __name__ == '__main__':
     args['mask_all'] = True
     # If True, randomly select topic for border shape as opposed to using square.
     args['border_shape'] = True
-    # Color of icon borders: None for no borders, otherwise scalar representing the relative brightness value of borders
+    # Scalar representing the relative brightness value of borders
     args['border_color'] = 0.5
 
     generate_visual(icons, colors, topics, emotions, overlap, **args)
