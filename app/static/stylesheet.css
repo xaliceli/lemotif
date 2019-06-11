@@ -8,8 +8,19 @@ html {
 
 h1, h2, h3 {
     font-family: 'Playfair Display', serif;
-    color: #0037FF;
+    /*color: #0037FF;*/
     margin: 1rem 0 0 0;
+}
+
+p {
+    line-height: 1.5rem;
+}
+
+a, a:visited {
+    font-size: 95%;
+    color: #333;
+    border-bottom: 2px solid #333;
+    text-decoration: none;
 }
 
 main {
@@ -33,11 +44,47 @@ main {
     position: fixed;
     right: 4rem;
     text-align: right;
+    width: 50%;
 }
 
 #vis img {
     object-fit: cover;
     padding: 1rem 0;
+    max-width: 40%;
+}
+
+textarea, input.subjects, input.emotions {
+    margin-top: .5rem;
+    font-family: 'Open Sans', 'Helvetica', sans-serif;
+    color: #333;
+    border: 1px solid #ededed;
+    font-size: .9025rem;
+}
+
+textarea {
+    width: 80%;
+    height: 125px;
+}
+
+textarea:focus, input:focus {
+    outline: none;
+}
+
+input.subjects {
+    width: 25%;
+}
+
+input.emotions {
+    width: 55%;
+}
+
+.toggle {
+    cursor: pointer;
+}
+
+#settings, #about {
+    display: none;
+    font-size: 95%;
 }
 
 ul.checklist {
@@ -65,6 +112,7 @@ ul.checklist li label {
     user-select: none;
     -webkit-tap-highlight-color: transparent;
     transition: all .2s;
+    font-size: 95%;
 }
 
 ul.checklist li label::before {
@@ -75,15 +123,14 @@ ul.checklist li label::before {
     -webkit-font-smoothing: antialiased;
     font-family: sans-serif;
     font-weight: 900;
-    font-size: 12px;
     padding: 2px 6px 2px 2px;
     content: none;
     transition: transform .3s ease-in-out;
 }
 
 ul.checklist li input[type="checkbox"]:checked + label {
-    border: 1px solid #0037FF;
-    background-color: #0037FF;
+    border: 1px solid #333;
+    background-color: #333;
     color: #fff;
 }
 
@@ -103,7 +150,7 @@ ul.checklist li input[type="checkbox"] {
 }
 
 .slider {
-    width: 80%;
+    width: 90%;
     vertical-align:middle;
     -webkit-appearance: none;
     background: #ededed;
@@ -115,19 +162,19 @@ ul.checklist li input[type="checkbox"] {
     appearance: none;
     width: 1rem;
     height: 1rem;
-    background: #0037FF;
+    background: #333;
     cursor: pointer;
 }
 
 .slider::-moz-range-thumb {
     width: 1rem;
     height: 1rem;
-    background: #0037FF;
+    background: #333;
     cursor: pointer;
 }
 
 .slider-container output {
-    color: #0037FF;
+    color: #333;
     font-size: .8rem;
 }
 
@@ -148,7 +195,7 @@ ul.checklist li input[type="checkbox"] {
 }
 
 .slider-container input[type="radio"]:checked {
-     background-color: #0037FF;
+     background-color: #333;
 }
 
 #vis input[type="submit"] {
@@ -156,12 +203,12 @@ ul.checklist li input[type="checkbox"] {
 }
 
 input[type="submit"], input[type="submit"].active {
-    background-color: #0037FF;
+    background-color: #333;
     color: #fff;
-    border: 2px solid #0037FF;
+    border: none;
     padding: .5rem;
     font-family: 'Open Sans', 'Helvetica', sans-serif;
-    font-size: 1rem;
+    font-size: .9025rem;
     cursor: pointer;
 }
 

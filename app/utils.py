@@ -34,11 +34,27 @@ def set_args():
     args['border_shape'] = True
     # Scalar representing the relative brightness value of borders
     args['border_color'] = 0.5
+    # Display text labels at bottom
+    args['text'] = False
+    # Summary motif
+    args['summary'] = False
 
-    return args
+    values = {
+        'text': '',
+        'subjects1': '',
+        'subjects2': '',
+        'subjects3': '',
+        'subjects4': '',
+        'emotions1': '',
+        'emotions2': '',
+        'emotions3': '',
+        'emotions4': ''
+    }
+
+    return args, values
 
 def get_args():
-    args = set_args()
+    args, values = set_args()
 
     for param in args.keys():
         results = request.form.getlist(param)
@@ -49,9 +65,13 @@ def get_args():
             else:
                 val = float(val) / 100 if float(val) >= 1 >= args[param] and param != 'passes' else int(val)
             args[param] = val
-        print(param, args[param])
 
-    return args
+    for value in values.keys():
+        results = request.form.getlist(value)
+        if len(results) > 0:
+            values[value] = str(results[0])
+
+    return args, values
 
 def img_to_str(img):
     image = Image.fromarray(img.astype("uint8"))

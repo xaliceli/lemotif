@@ -13,15 +13,15 @@ from lemotif.visualizations.utils import fill_color, bg_mask, fill_canvas
 
 def overlap(topics, emotions, icons, colors, size,
             background=(255, 255, 255), icon_ratio=0.1, size_flux=0.25, rand_alpha=True, passes=10, mask_all=True,
-            border_shape=False, border_color=None, inc_floor=0, inc_ceiling=1, **kwargs):
+            border_shape=False, border_color=None, inc_floor=0, inc_ceiling=1, text=True, **kwargs):
     if not set(topics) <= set(icons.keys()):
         return 'Error: Topics outside of presets.'
     if not set(emotions) <= set(colors.keys()):
         return 'Error: Emotions outside of presets.'
     base_size = int(min(size) * icon_ratio)
     icons_resized = [cv2.resize(icons[topic], (base_size, base_size)) for topic in topics]
-    colors = [colors[emotion] for emotion in emotions]
-    color_icons = [fill_color(icon, color['rgb'], border_color) for icon, color in product(icons_resized, colors)]
+    colors_list = [colors[emotion] for emotion in emotions]
+    color_icons = [fill_color(icon, color['rgb'], border_color) for icon, color in product(icons_resized, colors_list)]
 
     canvas = np.zeros((size[0], size[1], 3))
     canvas[..., :] = background
@@ -32,7 +32,7 @@ def overlap(topics, emotions, icons, colors, size,
             icon, icon_size = random.choice(color_icons), max(1, int(base_size * np.random.normal(1, size_flux)))
             icon_resized = cv2.resize(icon, (icon_size, icon_size), interpolation=cv2.INTER_NEAREST)
             adj_y = min(int(start[0] * np.random.normal(1, .025)), size[0] - icon_size)
-            mask = bg_mask(icon_resized, colors, border_color) if mask_all else None
+            mask = bg_mask(icon_resized, colors_list, border_color) if mask_all else None
             increment = random.randint(int(inc_floor * icon_size), int(icon_size * inc_ceiling))
             alpha = random.random() if rand_alpha else 0
             if start[1] + icon_size < canvas.shape[1]:
@@ -52,5 +52,16 @@ def overlap(topics, emotions, icons, colors, size,
         final_canvas[..., :] = background
         final_canvas[outline_mask] = canvas[outline_mask]
         canvas = final_canvas
+
+    if text:
+        for topic in topics:
+            cv2.putText(canvas, topic, (0, 20),
+                        fontFace=cv2.FONT_HERSHEY_DUPLEX, fontScale=.8, color=(0, 0, 0), thickness=1)
+        emotion_start = 20*len(topics[-1])
+        for emotion in emotions:
+            print(colors[emotion])
+            cv2.putText(canvas, emotion, (emotion_start, 20),
+                        fontFace=cv2.FONT_HERSHEY_DUPLEX, fontScale=.8, color=colors[emotion]['rgb'], thickness=1)
+            emotion_start += 20*len(emotion)
 
     return canvas

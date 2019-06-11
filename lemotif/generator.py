@@ -27,7 +27,7 @@ def load_assets(input_dir='../assets'):
     return icons_dict, colors_dict
 
 
-def generate_visual(icons, colors, topics, emotions, algorithm, out='../output', size=(500, 500), **args):
+def generate_visual(icons, colors, topics, emotions, algorithm, out='../output', size=(500, 500), summary=False, **args):
     """
     Generates visualization based on inputs.
 
@@ -39,6 +39,14 @@ def generate_visual(icons, colors, topics, emotions, algorithm, out='../output',
         algorithm (function): Algorithm to generate visual using.
     """
     outputs = [algorithm(t, e, icons, colors, size, **args) for t, e in zip(topics, emotions)]
+    if summary:
+        summary_args = args.copy()
+        summary_args['border_shape'] = False
+        outputs.append(algorithm(
+            [item for sublist in topics for item in sublist],
+            [item for sublist in emotions for item in sublist],
+            icons, colors, size, **summary_args)
+        )
     if out is not None:
         if not os.path.isdir(out):
             os.mkdir(out)

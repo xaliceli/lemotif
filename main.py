@@ -5,40 +5,51 @@ from lemotif import generator
 from lemotif.visualizations.overlap import overlap
 
 
-app = Flask(__name__, template_folder='app/templates/')
+app = Flask(__name__, template_folder='app/templates', static_folder='app/static')
 
 
 @app.route('/')
 def home():
     subjects, emotions = generator.load_assets('assets')
-    args = utils.set_args()
+    args, values = utils.set_args()
     return render_template('index.html',
                            emotions=sorted(emotions.keys()),
                            subjects=sorted(subjects.keys()),
-                           image=None,
-                           settings=args)
+                           images=None,
+                           settings=args,
+                           values=values)
 
 
 @app.route('/', methods=['POST'])
 def generate():
     subjects, emotions = generator.load_assets('assets')
-    subjects_render = request.form.getlist('subjects')
-    emotions_render = request.form.getlist('emotions')
-    args = utils.get_args()
+    subjects_render, emotions_render = [], []
+    for idx in range(4):
+        subject_input = request.form.getlist('subjects' + str(idx+1))
+        emotions_input = request.form.getlist('emotions' + str(idx+1))
+        if len(subject_input[0]) > 0 and len(emotions_input[0]) > 0:
+            subjects_render.append(subject_input)
+            emotions_split = emotions_input[0].split(', ')
+            emotions_split = emotions_split[:-1] if emotions_split[-1] == '' else emotions_split
+            emotions_render.append(emotions_split)
+    args, values = utils.get_args()
 
-    lemotif = generator.generate_visual(icons=subjects,
-                                        colors=emotions,
-                                        topics=[subjects_render],
-                                        emotions=[emotions_render],
-                                        algorithm=overlap,
-                                        out=None,
-                                        **args)[0]
-    image_encoded = utils.img_to_str(lemotif)
+    motifs = generator.generate_visual(icons=subjects,
+                                       colors=emotions,
+                                       topics=subjects_render,
+                                       emotions=emotions_render,
+                                       algorithm=overlap,
+                                       out=None,
+                                       **args)
+    images_encoded = []
+    for motif in motifs:
+        images_encoded.append(utils.img_to_str(motif))
     return render_template('index.html',
                            emotions=sorted(emotions.keys()),
                            subjects=sorted(subjects.keys()),
-                           image=image_encoded,
-                           settings=args)
+                           images=images_encoded,
+                           settings=args,
+                           values=values)
 
 
 if __name__ == '__main__':
