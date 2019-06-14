@@ -20,18 +20,33 @@
                 <h3>How was your day?</h3>
                 <form method='post' id="inputs" action='/'>
                     <textarea id="text" name="text">{{values['text']}}</textarea>
-                    <h3>What was the most salient theme of your day? How did it make you feel?</h3>
-                    <input id="subjects1" name="subjects1" class="subjects" value="{{values['subjects1']}}">
-                    <input id="emotions1" name="emotions1" class="emotions" value="{{values['emotions1']}}">
-                    <h3>Optional: What was another salient theme? How did it make you feel?</h3>
-                    <input id="subjects2" name="subjects2" class="subjects" value="{{values['subjects2']}}">
-                    <input id="emotions2" name="emotions2" class="emotions" value="{{values['emotions2']}}">
-                    <h3>Optional: What was another salient theme? How did it make you feel?</h3>
-                    <input id="subjects3" name="subjects3" class="subjects" value="{{values['subjects3']}}">
-                    <input id="emotions3" name="emotions3" class="emotions" value="{{values['emotions3']}}">
-                    <h3>Optional: What was another salient theme? How did it make you feel?</h3>
-                    <input id="subjects4" name="subjects4" class="subjects" value="{{values['subjects4']}}">
-                    <input id="emotions4" name="emotions4" class="emotions" value="{{values['emotions4']}}">
+                    {% for n in range(4) %}
+                        {% if n == 0 %}
+                            <h3>What was the most salient theme of your day? How did it make you feel?</h3>
+                        {% else %}
+                            <h3>Optional: What was another salient theme? How did it make you feel?</h3>
+                        {% endif %}
+                        {% if values['subjects' ~ (loop.index0 + 1)] == '' %}
+                            <input id={{'subjects' ~ (loop.index0 + 1)}}
+                                   name={{'subjects' ~ (loop.index0 + 1)}}
+                                   class="subjects"
+                                   placeholder="Enter a theme...">
+                        {% else %}
+                            <input id={{'subjects' ~ (loop.index0 + 1)}}
+                                   name={{'subjects' ~ (loop.index0 + 1)}}
+                                   class="subjects" value="{{values['subjects' ~ (loop.index0 + 1)]}}">
+                        {% endif %}
+                        {% if values['emotions' ~ (loop.index0 + 1)] == '' %}
+                            <input id={{'emotions' ~ (loop.index0 + 1)}}
+                                   name={{'emotions' ~ (loop.index0 + 1)}}
+                                   class="emotions"
+                                   placeholder="Enter any number of emotions...">
+                        {% else %}
+                            <input id={{'emotions' ~ (loop.index0 + 1)}}
+                                   name={{'emotions' ~ (loop.index0 + 1)}}
+                                   class="emotions" value="{{values['emotions' ~ (loop.index0 + 1)]}}">
+                        {% endif %}
+                    {% endfor %}
                     <br><br>
                     <input type="submit" value=">> Generate Motif" form="inputs">
                 <h3 onclick="expand('settings')" class="toggle">Settings &#9662;</h3>
