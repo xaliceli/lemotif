@@ -3,8 +3,13 @@
 <head>
 <title>Lemotif: Visual Journal</title>
 <link href="{{ url_for('static', filename='stylesheet.css')}}" rel="stylesheet">
-<link href="{{ url_for('static', filename='jquery-ui.min.css')}}"  rel="stylesheet">
-<link href="https://fonts.googleapis.com/css?family=Open+Sans|Playfair+Display&display=swap" rel="stylesheet">
+<!--<link href="{{ url_for('static', filename='jquery-ui.min.css')}}"  rel="stylesheet">-->
+<link href="https://fonts.googleapis.com/css?family=Open+Sans|IBM+Plex+Serif|Playfair+Display&display=swap" rel="stylesheet">
+<script type="text/javascript">
+    var emotionsDict = {{emotions|tojson}};
+    var subjectsList = {{subjects|tojson}};
+    var img_url = '/static/images/';
+</script>
 </head>
 
 <body>
@@ -15,16 +20,16 @@
                 <h3>How was your day?</h3>
                 <form method='post' id="inputs" action='/'>
                     <textarea id="text" name="text">{{values['text']}}</textarea>
-                    <h3>In one word, what was a salient theme of your day? How did it make you feel?</h3>
+                    <h3>What was the most salient theme of your day? How did it make you feel?</h3>
                     <input id="subjects1" name="subjects1" class="subjects" value="{{values['subjects1']}}">
                     <input id="emotions1" name="emotions1" class="emotions" value="{{values['emotions1']}}">
-                    <h3>Optional: What was another salient theme of your day? How did it make you feel?</h3>
+                    <h3>Optional: What was another salient theme? How did it make you feel?</h3>
                     <input id="subjects2" name="subjects2" class="subjects" value="{{values['subjects2']}}">
                     <input id="emotions2" name="emotions2" class="emotions" value="{{values['emotions2']}}">
-                    <h3>Optional: What was another salient theme of your day? How did it make you feel?</h3>
+                    <h3>Optional: What was another salient theme? How did it make you feel?</h3>
                     <input id="subjects3" name="subjects3" class="subjects" value="{{values['subjects3']}}">
                     <input id="emotions3" name="emotions3" class="emotions" value="{{values['emotions3']}}">
-                    <h3>Optional: What was another salient theme of your day? How did it make you feel?</h3>
+                    <h3>Optional: What was another salient theme? How did it make you feel?</h3>
                     <input id="subjects4" name="subjects4" class="subjects" value="{{values['subjects4']}}">
                     <input id="emotions4" name="emotions4" class="emotions" value="{{values['emotions4']}}">
                     <br><br>
@@ -108,7 +113,19 @@
             <div id='vis'>
                 {% if images %}
                     {% for image in images %}
-                        <img src='{{image}}'>
+                        <div class="image-wrapper">
+                            <img src='{{image}}'><br>
+                            <div class="image-label">
+                                {{ values['subjects' ~ (loop.index0 + 1)]}}:
+                                {% set emotions_list = values['emotions' ~ (loop.index0 + 1)].split(', ') %}
+                                {% for emot in emotions_list %}
+                                    <span style="background-color: {{emotions[emot]['hex']}}; color: #fff;
+                                                 padding: .25rem; margin: 0 .5rem;">
+                                        {{ emot }}
+                                    </span>
+                                {% endfor %}
+                            </div>
+                        </div>
                     {% endfor %}
                 {% endif %}
             </div>

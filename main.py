@@ -13,7 +13,7 @@ def home():
     subjects, emotions = generator.load_assets('assets')
     args, values = utils.set_args()
     return render_template('index.html',
-                           emotions=sorted(emotions.keys()),
+                           emotions=emotions,
                            subjects=sorted(subjects.keys()),
                            images=None,
                            settings=args,
@@ -45,7 +45,7 @@ def generate():
     for motif in motifs:
         images_encoded.append(utils.img_to_str(motif))
     return render_template('index.html',
-                           emotions=sorted(emotions.keys()),
+                           emotions=emotions,
                            subjects=sorted(subjects.keys()),
                            images=images_encoded,
                            settings=args,

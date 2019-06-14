@@ -69,12 +69,13 @@ def get_args():
     for value in values.keys():
         results = request.form.getlist(value)
         if len(results) > 0:
-            values[value] = str(results[0])
+            results[0] = results[0][:-2] if results[0][-2:] == ', ' else results[0]
+            values[value] = results[0]
 
     return args, values
 
 def img_to_str(img):
-    image = Image.fromarray(img.astype("uint8"))
+    image = Image.fromarray(img.astype("uint8")[..., [2, 1, 0]])
     rawBytes = BytesIO()
     image.save(rawBytes, 'PNG')
     rawBytes.seek(0)

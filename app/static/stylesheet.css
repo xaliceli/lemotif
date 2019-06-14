@@ -1,3 +1,7 @@
+html {
+    overflow-y: scroll;
+}
+
 body,
 html {
     margin: 0;
@@ -7,7 +11,7 @@ html {
 }
 
 h1, h2, h3 {
-    font-family: 'Playfair Display', serif;
+    font-family: 'IBM Plex Serif', 'Playfair Display', serif;
     /*color: #0037FF;*/
     margin: 1rem 0 0 0;
 }
@@ -19,8 +23,12 @@ p {
 a, a:visited {
     font-size: 95%;
     color: #333;
-    border-bottom: 2px solid #333;
+    border-bottom: 1px solid #333;
     text-decoration: none;
+}
+
+a:hover {
+    border-bottom: 2px solid #333;
 }
 
 main {
@@ -32,25 +40,19 @@ main {
     background: #ededed;
 }
 
-.container {
-    display: flex;
-}
-
-#input {
-    width: 50%;
-}
-
 #vis {
-    position: fixed;
     right: 4rem;
-    text-align: right;
-    width: 50%;
 }
 
-#vis img {
-    object-fit: cover;
+.image-wrapper {
     padding: 1rem 0;
-    max-width: 40%;
+    margin: 0;
+    display: inline-block;
+    text-align: center;
+}
+
+.image-wrapper img {
+    max-width: 100%;
 }
 
 textarea, input.subjects, input.emotions {
@@ -76,6 +78,58 @@ input.subjects {
 
 input.emotions {
     width: 55%;
+}
+
+.ui-menu {
+    width: 200px;
+    padding: 0;
+    margin: 0;
+    list-style-position: inside;
+    background: #fff;
+}
+
+.ui-menu-item {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.ui-menu-item-wrapper {
+    margin: 0;
+    background-image: none;
+    border: 0 !important;
+    padding: .25rem .25rem;
+    height: 1rem;
+    font-size: .9025rem;
+    font-family: 'Open Sans', 'Helvetica', sans-serif;
+    opacity: .5;
+}
+
+.ui-menu-item .ui-menu-item-wrapper.ui-state-active,  .ui-menu-item .ui-menu-item-wrapper.ui-state-focus,
+.ui-menu-item a.ui-state-focus {
+    background-image: none !important;
+    border: 0 !important;
+    opacity: 1;
+}
+
+.ui-visual-focus {
+    background-image: none;
+    box-shadow: none !important;
+}
+
+.ui-helper-hidden-accessible {
+    display: none;
+}
+
+.ui-menu-item-label {
+    position: relative;
+    margin: -1.4rem 0 0 1.25rem;
+}
+
+.ui-menu-item-wrapper img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
 }
 
 .toggle {
@@ -214,4 +268,21 @@ input[type="submit"], input[type="submit"].active {
 
 input[type="submit"]:focus {
   outline: none;
+}
+
+@media only screen and (min-width: 768px) {
+  /* For mobile phones: */
+    .container {
+        display: flex;
+    }
+    #input, #vis {
+        width: 50%;
+    }
+    #vis {
+        position: fixed;
+        text-align: right;
+    }
+    .image-wrapper {
+        max-width: 40%;
+    }
 }

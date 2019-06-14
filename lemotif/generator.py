@@ -23,6 +23,8 @@ def load_assets(input_dir='../assets'):
     for icon in glob.glob(os.path.join(input_dir, 'icons', '*.png')):
         name = os.path.basename(icon)[:-4]
         icons_dict[name] = cv2.imread(icon, -1)
+    for color in colors_dict.keys():
+        colors_dict[color]['hex'] = '#%02x%02x%02x' % colors_dict[color]['rgb']
 
     return icons_dict, colors_dict
 
