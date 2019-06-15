@@ -17,7 +17,8 @@ def home():
                            subjects=sorted(subjects.keys()),
                            images=None,
                            settings=args,
-                           values=values)
+                           values=values,
+                           error=None)
 
 
 @app.route('/', methods=['POST'])
@@ -34,22 +35,28 @@ def generate():
             emotions_render.append(emotions_split)
     args, values = utils.get_args()
 
-    motifs = generator.generate_visual(icons=subjects,
-                                       colors=emotions,
-                                       topics=subjects_render,
-                                       emotions=emotions_render,
-                                       algorithm=overlap,
-                                       out=None,
-                                       **args)
-    images_encoded = []
-    for motif in motifs:
-        images_encoded.append(utils.img_to_str(motif))
+    error, images_encoded = None, []
+    try:
+        motifs = generator.generate_visual(icons=subjects,
+                                           colors=emotions,
+                                           topics=subjects_render,
+                                           emotions=emotions_render,
+                                           algorithm=overlap,
+                                           out=None,
+                                           **args)
+        for motif in motifs:
+            images_encoded.append(utils.img_to_str(motif))
+    except:
+        error = '<p>Sorry, there was an error generating motifs for the provided inputs.</p>' + \
+                '<p>This demo currently only supports emotions and topics in the dropdown lists. Please try again.</p>'
+
     return render_template('index.html',
                            emotions=emotions,
                            subjects=sorted(subjects.keys()),
                            images=images_encoded,
                            settings=args,
-                           values=values)
+                           values=values,
+                           error=error)
 
 
 if __name__ == '__main__':

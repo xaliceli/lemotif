@@ -24,9 +24,19 @@ $(function () {
         emotId = '#emotions' + (i + 1);
         $(subjId)
             .autocomplete({
-                source: subjects
+                source: subjects,
+                minLength: 0,
+                change: function(event,ui){
+                    if (!ui.item) {
+                        $(this).val('');
+                        $(this).attr("placeholder", 'Invalid input, please try again.');
+                    }
+                }
             })
-        .autocomplete("instance")._renderItem = function (ul, item) {
+            .click(function(){
+                $(this).autocomplete( "search", "" );
+            })
+            .autocomplete("instance")._renderItem = function (ul, item) {
             return $("<li>")
                 .append("<div> <img src='" + img_url + item.label + ".png'>"
                     + "<div class='ui-menu-item-label'>" + item.label + "</div></div>")
@@ -60,12 +70,21 @@ $(function () {
                     terms.push("");
                     this.value = terms.join(", ");
                     return false;
+                },
+                change: function(event,ui){
+                    if (!ui.item) {
+                        $(this).val('');
+                        $(this).attr("placeholder", 'Invalid input, please try again.');
+                    }
                 }
+            })
+            .click(function(){
+                $(this).autocomplete( "search", "" );
             })
             .autocomplete("instance")._renderItem = function (ul, item) {
             return $("<li>")
-                .append("<div style='background-color:" + emotionsDict[item.value]['hex'] + "; color: #fff'>"
-                    + item.label + "</div>")
+                .append("<span style='color:" + emotionsDict[item.value]['hex'] + ";'>" + "&#9632;" + "</span>"
+                    + item.label)
                 .appendTo(ul);
         };
     }
