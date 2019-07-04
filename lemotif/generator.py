@@ -9,7 +9,9 @@ import os
 import cv2
 
 from assets.colors import colors_dict
+from lemotif.visualizations.carpet import carpet
 from lemotif.visualizations.overlap import overlap
+from lemotif.visualizations.tiles import tiles
 
 
 def load_assets(input_dir='../assets'):
@@ -40,6 +42,7 @@ def generate_visual(icons, colors, topics, emotions, algorithm, out='../output',
         emotions (list(list)): Nested list of emotions. Top level is per visualization.
         algorithm (function): Algorithm to generate visual using.
     """
+    algorithm = globals()[algorithm]
     outputs = [algorithm(t, e, icons, colors, size, **args) for t, e in zip(topics, emotions)]
     if summary:
         summary_args = args.copy()
@@ -59,11 +62,13 @@ def generate_visual(icons, colors, topics, emotions, algorithm, out='../output',
 
 if __name__ == '__main__':
     icons, colors = load_assets()
-    topics = [['sleep']]
-    emotions = [['happy', 'satisfied']]
+    topics = [['sleep'], ['work'], ['school']]
+    emotions = [['happy', 'satisfied'], ['anxious', 'afraid'], ['proud', 'calm']]
 
     # Lemotif adjustable settings
     args = {}
+    # Algorithm for output
+    args['algorithm'] = 'carpet'
     # Canvas size for output
     args['size'] = (500, 500)
     # Canvas background in BGR format
@@ -87,4 +92,4 @@ if __name__ == '__main__':
     # Scalar representing the relative brightness value of borders
     args['border_color'] = 0.5
 
-    generate_visual(icons, colors, topics, emotions, overlap, **args)
+    generate_visual(icons, colors, topics, emotions, **args)
