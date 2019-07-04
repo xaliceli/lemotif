@@ -8,7 +8,7 @@ import cv2
 import numpy as np
 import random
 
-from lemotif.visualizations.utils import fill_color, bg_mask, fill_canvas
+from lemotif.visualizations.utils import fill_color, bg_mask, fill_canvas, apply_shape, add_labels
 
 
 def overlap(topics, emotions, icons, colors, size,
@@ -46,22 +46,9 @@ def overlap(topics, emotions, icons, colors, size,
                 complete = True
 
     if border_shape:
-        outline_mask = fill_color(cv2.resize(icons[random.choice(topics)], size), (0, 0, 0), border_color) / 255
-        outline_mask = ~outline_mask.astype(bool)
-        final_canvas = np.ones((size[0], size[1], 3))
-        final_canvas[..., :] = background
-        final_canvas[outline_mask] = canvas[outline_mask]
-        canvas = final_canvas
+        canvas = apply_shape(canvas, icons, topics, size, border_color, background)
 
     if text:
-        for topic in topics:
-            cv2.putText(canvas, topic, (0, 20),
-                        fontFace=cv2.FONT_HERSHEY_DUPLEX, fontScale=.8, color=(0, 0, 0), thickness=1)
-        emotion_start = 20*len(topics[-1])
-        for emotion in emotions:
-            print(colors[emotion])
-            cv2.putText(canvas, emotion, (emotion_start, 20),
-                        fontFace=cv2.FONT_HERSHEY_DUPLEX, fontScale=.8, color=colors[emotion]['rgb'], thickness=1)
-            emotion_start += 20*len(emotion)
+        canvas = add_labels(canvas, topics, emotions, colors)
 
     return canvas

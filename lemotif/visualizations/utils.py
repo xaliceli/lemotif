@@ -5,6 +5,7 @@ Visualization helpers.
 
 import cv2
 import numpy as np
+import random
 
 
 def fill_color(shape, color, border_color=None, color_type='rgb'):
@@ -65,4 +66,25 @@ def fill_canvas(canvas, background, mask, size, icon_resized, start, adj_y, icon
     canvas[adj_y:adj_y + icon_size, start[1]:start[1] + icon_size][mask] = \
         canvas[adj_y:adj_y + icon_size, start[1]:start[1] + icon_size][mask] * alpha + icon_resized[mask] * (1 - alpha)
 
+    return canvas
+
+
+def apply_shape(canvas, icons, topics, size, border_color, background):
+    outline_mask = fill_color(cv2.resize(icons[random.choice(topics)], size), (0, 0, 0), border_color) / 255
+    outline_mask = ~outline_mask.astype(bool)
+    final_canvas = np.ones((size[0], size[1], 3))
+    final_canvas[..., :] = background
+    final_canvas[outline_mask] = canvas[outline_mask]
+    return final_canvas
+
+
+def add_labels(canvas, topics, emotions, colors):
+    for topic in topics:
+        cv2.putText(canvas, topic, (0, 20),
+                    fontFace=cv2.FONT_HERSHEY_DUPLEX, fontScale=.8, color=(0, 0, 0), thickness=1)
+    emotion_start = 20 * len(topics[-1])
+    for emotion in emotions:
+        cv2.putText(canvas, emotion, (emotion_start, 20),
+                    fontFace=cv2.FONT_HERSHEY_DUPLEX, fontScale=.8, color=colors[emotion]['rgb'], thickness=1)
+        emotion_start += 20 * len(emotion)
     return canvas
