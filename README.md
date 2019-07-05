@@ -19,6 +19,7 @@ The current app is a very early proof-of-concept. Future directions include:
 ## Citation
 
 ### Paper
+```
 @misc{parikh2019lemotif,
     title={Lemotif: Abstract Visual Depictions of your Emotional States in Life},
     author={Devi Parikh},
@@ -27,7 +28,9 @@ The current app is a very early proof-of-concept. Future directions include:
     archivePrefix={arXiv},
     primaryClass={cs.HC}
 }
+```
 
+```
 ### Code
 @misc{x_alice_li_2019_3269893,
   author       = {X. Alice Li and Devi Parikh},
@@ -37,3 +40,4 @@ The current app is a very early proof-of-concept. Future directions include:
   doi          = {10.5281/zenodo.3269893},
   url          = {https://doi.org/10.5281/zenodo.3269893}
 }
+```
