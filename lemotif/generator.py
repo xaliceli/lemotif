@@ -9,6 +9,7 @@ import os
 import cv2
 
 from assets.colors import colors_dict
+from lemotif.visualizations.utils import rgb_to_hsv
 from lemotif.visualizations.carpet import carpet
 from lemotif.visualizations.overlap import overlap
 from lemotif.visualizations.tiles import tiles
@@ -27,6 +28,8 @@ def load_assets(input_dir='../assets'):
         icons_dict[name] = cv2.imread(icon, -1)
     for color in colors_dict.keys():
         colors_dict[color]['hex'] = '#%02x%02x%02x' % colors_dict[color]['rgb']
+        colors_dict[color]['hsv'] = rgb_to_hsv(colors_dict[color]['rgb'])
+        print(colors_dict[color]['hsv'])
 
     return icons_dict, colors_dict
 

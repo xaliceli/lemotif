@@ -39,7 +39,8 @@ def tiles(topics, emotions, icons, colors, size, background=(255, 255, 255),
 
     for component in connections:
         fill = random.choice(colors_list)['rgb']
-        canvas[component.coords[:, 0], component.coords[:, 1]] = fill
+        canvas[component.coords[:, 0], component.coords[:, 1]] = [fill[2], fill[1], fill[0]]
+    del connections
 
     if border_shape:
         canvas = apply_shape(canvas, icons, topics, size, border_color, background)

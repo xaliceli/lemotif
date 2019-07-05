@@ -19,3 +19,4 @@ __pycache__/
 # Custom
 .idea/*
 output/*
+lemotif/visualizations/tilesandcarpetcode/*

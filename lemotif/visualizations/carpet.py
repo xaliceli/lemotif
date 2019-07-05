@@ -26,12 +26,13 @@ def carpet(topics, emotions, icons, colors, size, background=(255, 255, 255),
 
     tile_size = int(size[0]*tile_ratio)
     num_tiles = (int(size[0]/tile_size), int(size[1]/tile_size))
+    line_array = np.linspace(0, tile_size, num_lines)[:, None]
 
     for i in range(num_tiles[0]):
         for j in range(num_tiles[1]):
             x_start = j*tile_size
             y_start = i*tile_size
-            all_start = np.int32(np.linspace(0, tile_size, num_lines)[:, None] + [x_start, y_start])
+            all_start =  np.int32(line_array + [x_start, y_start])
             angle = random.choice(range(0, rotations*rot_degree, rot_degree))
             for line in range(num_lines):
                 if angle == 0:
@@ -57,8 +58,6 @@ def carpet(topics, emotions, icons, colors, size, background=(255, 255, 255),
                         end2 = (all_start[num_lines-1, 0], all_start[line, 1])
                         cv2.line(canvas, start2, end2, (0, 0, 0), line_width)
                 cv2.line(canvas, start, end, (0, 0, 0), line_width)
-            # cv2.imshow('canvas', canvas)
-            # cv2.waitKey(0)
     canvas = np.uint8(canvas[..., 0])
 
     # Find connected components
@@ -70,7 +69,8 @@ def carpet(topics, emotions, icons, colors, size, background=(255, 255, 255),
 
     for component in connections:
         fill = random.choice(colors_list)['rgb']
-        canvas[component.coords[:, 0], component.coords[:, 1]] = fill
+        canvas[component.coords[:, 0], component.coords[:, 1]] = [fill[2], fill[1], fill[0]]
+    del connections
 
     if border_shape:
         canvas = apply_shape(canvas, icons, topics, size, border_color, background)

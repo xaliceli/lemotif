@@ -12,6 +12,8 @@ from io import BytesIO
 
 def set_args():
     args = {}
+    # Algorithm to use
+    args['algorithm'] = 'tiles'
     # Canvas size for output
     args['size'] = (500, 500)
     # Canvas background in BGR format
@@ -62,7 +64,7 @@ def get_args():
             val = results[0]
             if type(args[param]) is bool:
                 val = val == 'True'
-            else:
+            elif type(args[param]) is not str:
                 val = float(val) / 100 if float(val) >= 1 >= args[param] and param != 'passes' else int(val)
             args[param] = val
 

@@ -8,6 +8,31 @@ import numpy as np
 import random
 
 
+def rgb_to_hsv(rgb):
+    r, g, b = rgb
+    r = float(r)
+    g = float(g)
+    b = float(b)
+    high = max(r, g, b)
+    low = min(r, g, b)
+    h, s, v = high, high, high
+
+    d = high - low
+    s = 0 if high == 0 else d/high
+
+    if high == low:
+        h = 0.0
+    else:
+        h = {
+            r: (g - b) / d + (6 if g < b else 0),
+            g: (b - r) / d + 2,
+            b: (r - g) / d + 4,
+        }[high]
+        h /= 6
+
+    return h*360, s*100, v
+
+
 def fill_color(shape, color, border_color=None, color_type='rgb'):
     """
     Fills in shape delineated by black lines with specified color.

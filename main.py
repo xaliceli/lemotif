@@ -2,8 +2,6 @@ from flask import Flask, render_template, request
 
 from app import utils
 from lemotif import generator
-from lemotif.visualizations.overlap import overlap
-
 
 app = Flask(__name__, template_folder='app/templates', static_folder='app/static')
 
@@ -41,14 +39,12 @@ def generate():
                                            colors=emotions,
                                            topics=subjects_render,
                                            emotions=emotions_render,
-                                           algorithm=overlap,
                                            out=None,
                                            **args)
         for motif in motifs:
             images_encoded.append(utils.img_to_str(motif))
     except:
-        error = '<p>Sorry, there was an error generating motifs for the provided inputs.</p>' + \
-                '<p>This demo currently only supports emotions and topics in the dropdown lists. Please try again.</p>'
+        error = 'Sorry, there was an error generating motifs for the provided inputs. This demo currently only supports emotions and topics in the dropdown lists. Please try again.'
 
     return render_template('index.html',
                            emotions=emotions,
