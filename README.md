@@ -30,8 +30,8 @@ The current app is a very early proof-of-concept. Future directions include:
 }
 ```
 
-```
 ### Code
+```
 @misc{x_alice_li_2019_3269893,
   author       = {X. Alice Li and Devi Parikh},
   title        = {Lemotif: Affective Visual Journal},
