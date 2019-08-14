@@ -29,7 +29,6 @@ def load_assets(input_dir='../assets'):
     for color in colors_dict.keys():
         colors_dict[color]['hex'] = '#%02x%02x%02x' % colors_dict[color]['rgb']
         colors_dict[color]['hsv'] = rgb_to_hsv(colors_dict[color]['rgb'])
-        print(colors_dict[color]['hsv'])
 
     return icons_dict, colors_dict
 
@@ -47,6 +46,7 @@ def generate_visual(icons, colors, topics, emotions, algorithm, out='../output',
     """
     algorithm = globals()[algorithm]
     outputs = [algorithm(t, e, icons, colors, size, **args) for t, e in zip(topics, emotions)]
+
     if summary:
         summary_args = args.copy()
         summary_args['border_shape'] = False

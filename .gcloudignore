@@ -20,3 +20,4 @@ __pycache__/
 .idea/*
 output/*
 lemotif/visualizations/tilesandcarpetcode/*
+assets/models/*
