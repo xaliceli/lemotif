@@ -38,6 +38,7 @@ class SemanticSim():
             best_score, best_match = float('-inf'), None
             for concept in self.lemotif_vectorized:
                 current_score = token.similarity(concept)
+                print(token, concept, current_score)
                 if current_score > best_score:
                     best_score, best_match = current_score, concept
             best[token.text] = (best_match, best_score)
