@@ -2,7 +2,6 @@
 data.py
 """
 import os
-import random
 
 import numpy as np
 import tensorflow as tf
@@ -15,11 +14,11 @@ class DataGenerator():
         self.batch_size = kwargs['batch_size']
         self.tags = kwargs['tag_dict']
 
-    def parse(self, file):
-        img = (tf.image.decode_jpeg(tf.io.read_file(file)) - 127.5)/127.5
+    def parse(self, file, label):
+        img = (tf.cast(tf.image.decode_jpeg(tf.io.read_file(file)), tf.float32) - 127.5)/127.5
         img = tf.image.resize(img, self.shape)
 
-        return tf.data.Dataset.from_tensor_slices([img])
+        return img, label
 
     def gen_dataset(self):
         empty_label_vector = np.zeros(len(self.tags.keys()))
@@ -35,7 +34,8 @@ class DataGenerator():
             # TODO: User tags in MIRFLICKR25K take different format.
 
             # Append images to full list
-            concept_samples = list(set([s.replace('\n', '') + '.jpg' for s in concept_samples]))
+            concept_samples = list(set([os.path.join(self.source_dir, 'im' + s.replace('\n', '') + '.jpg')
+                                        for s in concept_samples]))
             all_imgs += concept_samples
 
             # Append label vectors to full list
@@ -43,7 +43,8 @@ class DataGenerator():
             label_vector[idx] = 1
             all_labels += [label_vector] * len(concept_samples)
 
-        dataset = tf.data.Dataset.from_tensor_slices(random.shuffle(zip(all_imgs, all_labels))).\
-            shuffle(100).repeat().map(self.parse).batch(self.batch_size)
+
+        dataset = tf.data.Dataset.from_tensor_slices((all_imgs, all_labels)).\
+            shuffle(len(all_imgs)).repeat().map(self.parse).batch(self.batch_size)
 
         return dataset

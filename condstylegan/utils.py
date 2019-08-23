@@ -9,7 +9,7 @@ import tensorflow.keras.layers as kl
 from tensorflow.keras import models, initializers, regularizers, constraints
 
 
-def add_noise(x):
+def add_noise(x, batch_size):
     """
     Adds noise to outputs of convolutional layer.
     Args:
@@ -17,16 +17,15 @@ def add_noise(x):
     Returns:
         Feature map with stochastic variation introduced.
     """
-    with tf.variable_scope('StochasticNoise'):
-        # Add randomly generated single-channel noise images of the same shape as current layer.
-        shape = x.get_shape().as_list()
-        noise = tf.random_normal([shape[0], shape[1], shape[2], 1], dtype=x.dtype)
-        # Apply per-channel scaling factor to noise input through element-wise multiplication.
-        noise_scaled = kl.Conv2D(filters=shape[-1], kernel_size=1, padding='same',
-                                 kernel_initializer=initializers.Zeros())(noise)
-        x = kl.Add()([x, noise_scaled])
+    # Add randomly generated single-channel noise images of the same shape as current layer.
+    shape = x.get_shape().as_list()
+    noise = tf.random.normal([batch_size, shape[1], shape[2], 1], dtype=x.dtype)
+    # Apply per-channel scaling factor to noise input through element-wise multiplication.
+    noise_scaled = kl.Conv2D(filters=shape[-1], kernel_size=1, padding='same',
+                             kernel_initializer=initializers.Zeros())(noise)
+    x = kl.Add()([x, noise_scaled])
 
-        return x
+    return x
 
 
 def instance_norm(x, epsilon=1e-8):
@@ -38,15 +37,14 @@ def instance_norm(x, epsilon=1e-8):
     Returns:
         Normalized layer.
     """
-    with tf.variable_scope('InstanceNorm'):
-        orig_dtype = x.dtype
-        x = tf.cast(x, tf.float32)
-        x -= tf.reduce_mean(x, axis=[1, 2], keepdims=True)
-        epsilon = tf.constant(epsilon, dtype=x.dtype, name='epsilon')
-        x *= tf.rsqrt(tf.reduce_mean(tf.square(x), axis=[1, 2], keepdims=True) + epsilon)
-        x = tf.cast(x, orig_dtype)
+    orig_dtype = x.dtype
+    x = tf.cast(x, tf.float32)
+    x -= tf.reduce_mean(x, axis=[1, 2], keepdims=True)
+    epsilon = tf.constant(epsilon, dtype=x.dtype, name='epsilon')
+    x *= tf.rsqrt(tf.reduce_mean(tf.square(x), axis=[1, 2], keepdims=True) + epsilon)
+    x = tf.cast(x, orig_dtype)
 
-        return x
+    return x
 
 
 class ELRDense(kl.Layer):

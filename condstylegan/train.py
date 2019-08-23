@@ -5,14 +5,17 @@ Train model.
 
 import tensorflow as tf
 
-from condstylegan.model import ConditionalStyleGAN
-from condstylegan.data import DataGenerator
+from model import ConditionalStyleGAN
+from data import DataGenerator
 
 PARAMS = {
     'dataset': 'mirflickr25k',
     'shape': (256, 256),
     'batch_size': 8,
-    'iterations': 100000,  # Number of epochs
+    'z_dim': 256,
+    'img_size': 256,
+    'start_size': 8,
+    'iterations': 40000,  # Number of epochs
     'lr': 0.00001,  # Learning rate
     'b1': 0.5,  # Adam beta1
     'b2': 0.99,   # Adam beta2
@@ -33,6 +36,7 @@ if PARAMS['dataset'] == 'mirflickr25k':
 
 if __name__ == '__main__':
     tf.compat.v1.enable_eager_execution()
-    dataset = DataGenerator(**PARAMS).gen_dataset()
+    with tf.device("/cpu:0"):
+        dataset = DataGenerator(**PARAMS).gen_dataset()
     model = ConditionalStyleGAN(**PARAMS)
-    model.train(data=dataset, **PARAMS)
+    model.train(train_data=dataset, **PARAMS)
