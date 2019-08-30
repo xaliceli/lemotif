@@ -55,8 +55,10 @@ class ConditionalStyleGAN():
                                               generator=self.generator,
                                               discriminator=self.discriminator)
 
-    def train_step(self, imgs, conditioning, fade, ones, noise):
+    def train_step(self, imgs, conditioning, fade, ones):
         # Generate noise from normal distribution
+        noise = tf.random_normal([self.batch_size, self.z_dim])
+
         with tf.GradientTape() as gen_tape, tf.GradientTape() as disc_tape:
             generated_imgs = self.generator(inputs=[noise, conditioning, fade, ones], training=True)
 
@@ -91,13 +93,13 @@ class ConditionalStyleGAN():
         # Number of progressive resolution stages
         resolutions = int(np.log2(img_size/loop_start_size)) + 1
         ones = tf.cast(tf.ones((self.batch_size, 1)), tf.float32)
-        noise = tf.random_normal([self.batch_size, self.z_dim])
 
         for resolution in range(resolutions):
             print('Resolution: ', loop_start_size*2**resolution)
             self.fade = True if (resolution > 0 or loop_start_size > start_size) else False
             progress = tqdm(train_data.take(iterations))
             for iteration, (imgs, conditioning) in enumerate(progress):
+                # tf.reset_default_graph()
                 if resolution < resolutions - 1:
                     pool_factor = 2 ** (resolutions - resolution - 1)
                     imgs = kl.AveragePooling2D(pool_factor, padding='same')(imgs)
@@ -107,7 +109,7 @@ class ConditionalStyleGAN():
                 imgs = tf.cast(imgs, tf.float32)
                 conditioning = tf.cast(conditioning, tf.float32)
                 fade = tf.constant(fade, shape=(self.batch_size, 1), dtype=tf.float32)
-                self.train_step(imgs=imgs, conditioning=conditioning, fade=fade, ones=ones, noise=noise)
+                self.train_step(imgs=imgs, conditioning=conditioning, fade=fade, ones=ones)
                 progress.set_postfix(best_gen_loss=self.best_gen_loss.numpy(), best_disc_loss=self.best_disc_loss.numpy(),
                                      gen_loss=self.gen_loss.numpy(), disc_loss=self.disc_loss.numpy())
 
@@ -247,7 +249,7 @@ class ConditionalStyleGAN():
         if self.fade:
             downsampled = kl.AveragePooling2D(pool_size=(2, 2), padding='same')(converted)
             x = kl.Lambda(lambda args: blend_resolutions(args[0], args[1], args[2]))([x, downsampled, fade])
-        x = kl.Lambda(lambda x: tf.contrib.layers.layer_norm(x))(x)
+        x = kl.BatchNormalization()(x)
         x = kl.LeakyReLU(.2)(x)
 
         for resolution in range(conv_loop):
@@ -255,7 +257,7 @@ class ConditionalStyleGAN():
             x = kl.Conv2D(filters=filters, kernel_size=4, strides=2, padding='same',
                           kernel_initializer=self.conv_init,
                           name='conv_' + str(out_size / 2**(resolution+2))+'_'+str(filters))(x)
-            x = kl.Lambda(lambda x: tf.contrib.layers.layer_norm(x))(x)
+            x = kl.BatchNormalization()(x)
             x = kl.LeakyReLU(.2)(x)
 
         # Convert to single value
