@@ -1,5 +1,5 @@
 """
-semantic_similarity.py
+parsers.py
 Gets closest match from Lemotif subjects and emotions.
 """
 import string
@@ -9,8 +9,8 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 
 class SemanticSim():
 
-    def __init__(self):
-        self.model = spacy.load('en_core_web_lg')
+    def __init__(self, model):
+        self.model = spacy.load(model)
         self.parser = spacy.lang.en.English()
         self.lemotif = {
             'subjects': ['exercise', 'family', 'food', 'friends', 'god', 'health', 'love', 'recreation', 'school',
@@ -62,5 +62,7 @@ class SemanticSim():
 
 if __name__ == '__main__':
     # print(SemanticSim().compare_word('scared depressed fine elated upbeat run buddies faith'))
-    print(SemanticSim().evaluate_text('Today was a terrible, terrible, day. Work was awful and terrible and stressful. '
-                                      'School made me cry. I feel extremely sad and defeated.'))
+    print(SemanticSim('en_core_web_lg').evaluate_text(
+        'Today was a terrible day. Work was awful and terrible and stressful. I feel extremely sad and defeated.'))
+    print(SemanticSim('/Users/alice/School/vil-lemotif/lemotif/data/conceptnet').evaluate_text(
+        'Today was a terrible day. Work was awful and terrible and stressful. I feel extremely sad and defeated.'))

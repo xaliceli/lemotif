@@ -2,7 +2,7 @@
 carpet.py
 Carpet visualization
 """
-
+import gc
 import cv2
 import numpy as np
 import skimage
@@ -71,6 +71,7 @@ def carpet(topics, emotions, icons, colors, size, background=(255, 255, 255),
         fill = random.choice(colors_list)['rgb']
         canvas[component.coords[:, 0], component.coords[:, 1]] = [fill[2], fill[1], fill[0]]
     del connections
+    gc.collect()
 
     if border_shape:
         canvas = apply_shape(canvas, icons, topics, size, border_color, background)

@@ -1,12 +1,14 @@
+import gc
 from flask import Flask, render_template, request
 
 from app import utils
 from lemotif import generator
 
+
 app = Flask(__name__, template_folder='app/templates', static_folder='app/static')
 
 
-@app.route('/')
+@app.route('/', methods=['GET'])
 def home():
     subjects, emotions = generator.load_assets('assets')
     args, values = utils.set_args()
@@ -41,8 +43,11 @@ def generate():
                                            emotions=emotions_render,
                                            out=None,
                                            **args)
+
         for motif in motifs:
             images_encoded.append(utils.img_to_str(motif))
+        del motifs
+        gc.collect()
     except:
         error = 'Sorry, there was an error generating motifs for the provided inputs. This demo currently only supports emotions and topics in the dropdown lists. Please try again.'
 

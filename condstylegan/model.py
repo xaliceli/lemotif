@@ -1,9 +1,8 @@
 """
 model.py
-Conditional StyleGAN model based on NVidia implementation
+Conditional GAN model
 """
 import os
-import random
 
 import numpy as np
 import tensorflow as tf
@@ -13,11 +12,12 @@ from tqdm import tqdm
 from utils import add_noise, instance_norm
 
 
-class ConditionalStyleGAN():
+class ConditionalGAN():
 
     def __init__(self,
                  batch_size,
                  z_dim,
+                 n_classes,
                  map_layers=4,
                  conv_init='he_normal',
                  disc_iterations=1,
@@ -27,7 +27,7 @@ class ConditionalStyleGAN():
                  **kwargs):
         self.batch_size = batch_size
         self.z_dim = z_dim
-        self.num_classes = len(kwargs['tag_dict'].keys())
+        self.num_classes = n_classes
         self.map_layers = map_layers
         self.conv_init = conv_init
         self.disc_iterations = disc_iterations
@@ -47,8 +47,8 @@ class ConditionalStyleGAN():
             print(self.generator.summary())
             print(self.discriminator.summary())
 
-        self.gen_optimizer = tf.train.AdamOptimizer(learning_rate=lr, beta1=b1, beta2=b2)
-        self.disc_optimizer = tf.train.AdamOptimizer(learning_rate=lr, beta1=b1, beta2=b2)
+        self.gen_optimizer = tf.compat.v1.train.AdamOptimizer(learning_rate=lr, beta1=b1, beta2=b2)
+        self.disc_optimizer = tf.compat.v1.train.AdamOptimizer(learning_rate=lr, beta1=b1, beta2=b2)
 
         self.checkpoint = tf.train.Checkpoint(generator_optimizer=self.gen_optimizer,
                                               discriminator_optimizer=self.disc_optimizer,
@@ -57,26 +57,32 @@ class ConditionalStyleGAN():
 
     def train_step(self, imgs, conditioning, fade, ones):
         # Generate noise from normal distribution
-        noise = tf.random_normal([self.batch_size, self.z_dim])
+        noise = tf.random.normal([self.batch_size, self.z_dim])
+        conditioning_noised = conditioning + tf.random.normal([self.batch_size, self.num_classes], stddev=.001)
 
         with tf.GradientTape() as gen_tape, tf.GradientTape() as disc_tape:
-            generated_imgs = self.generator(inputs=[noise, conditioning, fade, ones], training=True)
+            generated_imgs = self.generator(inputs=[noise, conditioning_noised, fade, ones], training=True)
 
-            real_disc = self.discriminator(inputs=[imgs, conditioning, fade], training=True)
-            generated_disc = self.discriminator(inputs=[generated_imgs, conditioning, fade], training=True)
+            real_disc, real_labels_pred = \
+                self.discriminator(inputs=[imgs, conditioning_noised, fade], training=True)
+            generated_disc, generated_labels_pred = \
+                self.discriminator(inputs=[generated_imgs, conditioning_noised, fade], training=True)
 
-            self.gen_loss = self.generator_loss(generated_disc)
-            self.disc_loss = self.discriminator_loss(imgs, generated_imgs, real_disc, generated_disc, conditioning, fade)
+            gen_loss = self.generator_loss(generated_disc)
+            disc_loss = self.discriminator_loss(imgs, generated_imgs, real_disc, generated_disc, conditioning, fade)
+            self.true_label_loss, self.gen_label_loss = self.conditioning_loss(
+                conditioning, real_labels_pred, generated_labels_pred)
+            self.tot_disc_loss = disc_loss + self.true_label_loss * 1000
+            self.tot_gen_loss = gen_loss + self.gen_label_loss * 1000
 
-        gradients_of_generator = gen_tape.gradient(self.gen_loss, self.generator.trainable_variables)
-        gradients_of_discriminator = disc_tape.gradient(self.disc_loss, self.discriminator.trainable_variables)
+        gradients_of_generator = gen_tape.gradient(self.tot_gen_loss, self.generator.trainable_variables)
+        gradients_of_discriminator = disc_tape.gradient(self.tot_disc_loss, self.discriminator.trainable_variables)
 
         self.gen_optimizer.apply_gradients(zip(gradients_of_generator, self.generator.trainable_variables))
-
         self.disc_optimizer.apply_gradients(zip(gradients_of_discriminator, self.discriminator.trainable_variables))
 
-        self.best_gen_loss = min(self.best_gen_loss, self.gen_loss) if self.best_gen_loss else self.gen_loss
-        self.best_disc_loss = min(self.best_disc_loss, self.disc_loss) if self.best_disc_loss else self.disc_loss
+        self.best_gen_loss = min(self.best_gen_loss, self.tot_gen_loss) if self.best_gen_loss else self.tot_gen_loss
+        self.best_disc_loss = min(self.best_disc_loss, self.tot_disc_loss) if self.best_disc_loss else self.tot_disc_loss
 
     def train(self, train_data, img_size, start_size, iterations, lr, save_dir, b1, b2, save_int, **kwargs):
         # Load from checkpoint
@@ -84,8 +90,10 @@ class ConditionalStyleGAN():
         if latest_checkpoint:
             print('Loading checkpoint ' + latest_checkpoint)
             loop_start_size = start_size * 2**(int(os.path.basename(latest_checkpoint)[4])-1)
+            checkpt_n = int(os.path.basename(latest_checkpoint).split('-')[1].split('.')[0])
         else:
             loop_start_size = start_size
+            checkpt_n = 0
         self.init_models(loop_start_size, lr, b1, b2)
         if latest_checkpoint:
             self.checkpoint.restore(latest_checkpoint)
@@ -96,29 +104,27 @@ class ConditionalStyleGAN():
 
         for resolution in range(resolutions):
             print('Resolution: ', loop_start_size*2**resolution)
-            self.fade = True if (resolution > 0 or loop_start_size > start_size) else False
+            self.fade = True if (resolution > 0 or (loop_start_size > start_size and checkpt_n < 20)) else False
             progress = tqdm(train_data.take(iterations))
             for iteration, (imgs, conditioning) in enumerate(progress):
-                # tf.reset_default_graph()
                 if resolution < resolutions - 1:
                     pool_factor = 2 ** (resolutions - resolution - 1)
                     imgs = kl.AveragePooling2D(pool_factor, padding='same')(imgs)
-                fade = iteration/(iterations//2.0)
-                if fade == 1:
-                    self.fade = False
-                imgs = tf.cast(imgs, tf.float32)
-                conditioning = tf.cast(conditioning, tf.float32)
+                fade = min(iteration/(iterations//2.0), 1.0) if self.fade else 1.0
                 fade = tf.constant(fade, shape=(self.batch_size, 1), dtype=tf.float32)
                 self.train_step(imgs=imgs, conditioning=conditioning, fade=fade, ones=ones)
                 progress.set_postfix(best_gen_loss=self.best_gen_loss.numpy(), best_disc_loss=self.best_disc_loss.numpy(),
-                                     gen_loss=self.gen_loss.numpy(), disc_loss=self.disc_loss.numpy())
+                                     gen_loss=self.tot_gen_loss.numpy(), disc_loss=self.tot_disc_loss.numpy(),
+                                     pred_class=self.true_label_loss.numpy(), pred_gen=self.gen_label_loss.numpy())
 
                 # Save every n intervals
-                if (iteration + 1) % save_int == 0:
+                if iteration % save_int == 0:
                     random_classes = []
                     for i in range(self.batch_size):
                         random_label = [0] * self.num_classes
-                        random_label[random.randint(0, self.num_classes - 1)] = 1
+                        random_label[np.random.randint(0, self.num_classes)] = 1
+                        random_label[np.random.randint(0, self.num_classes)] = 1
+                        random_label[np.random.randint(0, self.num_classes)] = 1
                         random_classes.append(random_label)
                     conditioning = tf.cast(tf.stack(random_classes), tf.float32)
                     self.generate(iteration + 1, save_dir, self.batch_size, conditioning)
@@ -132,7 +138,7 @@ class ConditionalStyleGAN():
                 self.update_models(loop_start_size*2**resolution)
 
 
-    def generator_model(self, out_size, start_size=8, start_filters=512):
+    def generator_model(self, out_size, start_size=8, start_filters=256):
 
         # Fading function
         def blend_resolutions(upper, lower, alpha):
@@ -151,18 +157,18 @@ class ConditionalStyleGAN():
         # Mapping network
         w = tf.concat((z, conditioning), 1) # Concatenate noise input with condition labels
         for layer in range(self.map_layers):
-            w = kl.Dense(units=start_filters/2, name='dense_map' + '_' + str(layer))(w)
+            w = kl.Dense(units=start_filters, name='dense_map' + '_' + str(layer))(w)
             w = kl.LeakyReLU(alpha=.2)(w)
 
         # Synthesis network
         lower_res = None
         for resolution in range(conv_loop):
-            filters = max(start_filters // 2**(resolution+1), 4)
+            filters = max(start_filters // 2**(resolution), 4)
             if resolution == 0:  # 4x4
                 with tf.variable_scope('Constant'):
                     x = kl.Dense(units=4 * 4 * filters)(constant)
                     x = kl.Reshape([4, 4, filters])(x)
-                    x = kl.Lambda(lambda x: add_noise(x, self.batch_size))(x)
+                    # x = kl.Lambda(lambda x: add_noise(x, self.batch_size))(x)
                     x = kl.LeakyReLU(alpha=.2)(x)
 
                     # Adaptive instance normalization and style moderation.
@@ -177,7 +183,7 @@ class ConditionalStyleGAN():
                 with tf.variable_scope('Conv_' + str(resolution) + '_0'):
                     x = kl.Conv2D(filters=filters, kernel_size=3, padding='same',
                                   name='conv_' + str(resolution) + '_0')(x)
-                    x = kl.Lambda(lambda x: add_noise(x, self.batch_size))(x)
+                    # x = kl.Lambda(lambda x: add_noise(x, self.batch_size))(x)
                     x = kl.LeakyReLU(alpha=.2)(x)
 
                     # Adaptive instance normalization operation and style moderation.
@@ -188,12 +194,12 @@ class ConditionalStyleGAN():
                     x = kl.Multiply()([x, style_mul])
                     x = kl.Add()([x, style_add])
             else:
-                x = kl.UpSampling2D()(x)
+                x = kl.UpSampling2D(interpolation='bilinear')(x)
                 for conv in range(2):
                     with tf.variable_scope('Conv_' + str(resolution) + '_' + str(conv)):
                         x = kl.Conv2D(filters=filters, kernel_size=3, padding='same',
                                       name='conv_' + str(resolution) + '_' + str(conv))(x)
-                        x = kl.Lambda(lambda x: add_noise(x, self.batch_size))(x)
+                        # x = kl.Lambda(lambda x: add_noise(x, self.batch_size))(x)
                         x = kl.LeakyReLU(alpha=.2)(x)
 
                         # Adaptive instance normalization operation and style moderation.
@@ -203,7 +209,7 @@ class ConditionalStyleGAN():
                                              name='dense_' + str(resolution) + '_' + str(conv) + '_1')(w)
                         x = kl.Multiply()([x, style_mul])
                         x = kl.Add()([x, style_add])
-            if resolution == conv_loop - 1 and conv_loop > 1:
+            if resolution == conv_loop - 2 and conv_loop > 1:
                 lower_res = x
 
         # Conversion to 3-channel color
@@ -215,7 +221,7 @@ class ConditionalStyleGAN():
 
         # Fade output of previous resolution stage into final resolution stage
         if self.fade and lower_res:
-            lower_upsampled = kl.UpSampling2D()(lower_res)
+            lower_upsampled = kl.UpSampling2D(interpolation='bilinear')(lower_res)
             lower_upsampled = convert_to_image(lower_upsampled)
             x = kl.Lambda(lambda x, y, alpha: blend_resolutions(x, y, alpha))([x, lower_upsampled, fade])
 
@@ -245,7 +251,7 @@ class ConditionalStyleGAN():
                       name='conv_'+str(out_size/2)+'_'+str(start_filters))(converted)
 
         # Calculate discriminator score using alpha-blended combination of new discriminator layer outputs
-        # versus downsampled version of input videos
+        # versus downsampled version of input images
         if self.fade:
             downsampled = kl.AveragePooling2D(pool_size=(2, 2), padding='same')(converted)
             x = kl.Lambda(lambda args: blend_resolutions(args[0], args[1], args[2]))([x, downsampled, fade])
@@ -254,22 +260,30 @@ class ConditionalStyleGAN():
 
         for resolution in range(conv_loop):
             filters = start_filters * 2**(resolution + 1)
-            x = kl.Conv2D(filters=filters, kernel_size=4, strides=2, padding='same',
+            x = kl.Conv2D(filters=filters, kernel_size=3, strides=1, padding='same',
                           kernel_initializer=self.conv_init,
-                          name='conv_' + str(out_size / 2**(resolution+2))+'_'+str(filters))(x)
-            x = kl.BatchNormalization()(x)
+                          name='conv_' + str(resolution) + '_0_' + str(out_size / 2**(resolution+2))+'_'+str(filters))(x)
+            x = kl.LeakyReLU(.2)(x)
+            x = kl.Conv2D(filters=filters, kernel_size=3, strides=2, padding='same',
+                          kernel_initializer=self.conv_init,
+                          name='conv_' + str(resolution) + '_1_'+ str(out_size / 2**(resolution+2))+'_'+str(filters))(x)
             x = kl.LeakyReLU(.2)(x)
 
         # Convert to single value
-        x = kl.Conv2D(filters=1, kernel_size=4, strides=2, padding='same',
-                      kernel_initializer=self.conv_init, name='conv_1')(x)
-        x = kl.LeakyReLU(.2)(x)
         x = kl.Flatten()(x)
-        x = tf.concat((x, conditioning), 1)
-        x = kl.Dense(1, kernel_initializer=tf.keras.initializers.random_normal(stddev=0.01),
-                     name='dense_'+str(x.get_shape().as_list()[-1]))(x)
 
-        return tf.keras.models.Model(inputs=[img, conditioning, fade], outputs=x, name='discriminator')
+        # Label prediction
+        label_pre = kl.Dense(max_filters/16,
+                             name='dense_'+str(x.get_shape().as_list()[-1]))(x)
+        labels_out = kl.Dense(self.num_classes,
+                              name='dense_to_labels_'+str(x.get_shape().as_list()[-1]))(label_pre)
+
+        # Discriminator score
+        x = tf.concat((x, conditioning), 1)
+        x = kl.Dense(max_filters/16, name='dense_'+str(x.get_shape().as_list()[-1]))(x)
+        x = kl.Dense(1, name='dense_to_score_'+str(x.get_shape().as_list()[-1]))(x)
+
+        return tf.keras.models.Model(inputs=[img, conditioning, fade], outputs=[x, labels_out], name='discriminator')
 
     def update_models(self, size):
         # Updates generator and discriminator models to add new layers corresponding to next resolution size
@@ -279,11 +293,11 @@ class ConditionalStyleGAN():
         new_gen_layers = [layer.name for layer in new_generator.layers]
         new_disc_layers = [layer.name for layer in new_discriminator.layers]
         for layer in self.generator.layers:
-            if ('dense' in layer.name or 'conv' in layer.name) and layer.name in new_gen_layers:
+            if ('dense' in layer.name or 'conv' in layer.name or 'batch' in layer.name) and layer.name in new_gen_layers:
                 print('Updating ', layer.name)
                 new_generator.get_layer(layer.name).set_weights(self.generator.get_layer(layer.name).get_weights())
         for layer in self.discriminator.layers:
-            if ('dense' in layer.name or 'conv' in layer.name) and layer.name in new_disc_layers:
+            if ('dense' in layer.name or 'conv' in layer.name or 'batch' in layer.name) and layer.name in new_disc_layers:
                 print('Updating ', layer.name)
                 new_discriminator.get_layer(layer.name).set_weights(self.discriminator.get_layer(layer.name).get_weights())
         self.generator, self.discriminator = new_generator, new_discriminator
@@ -307,14 +321,15 @@ class ConditionalStyleGAN():
         # Negative so that gradient descent maximizes critic score received by generated output
         return -tf.reduce_mean(generated_disc)
 
-    def discriminator_loss(self, real_imgs, generated_imgs, real_disc, generated_disc, conditioning, fade, gp_lambda=10):
+    def discriminator_loss(self, real_imgs, generated_imgs, real_disc, generated_disc, conditioning, fade, gp_lambda=10,
+                           epsilon=0.001):
         # WGAN-GP loss: https://arxiv.org/pdf/1704.00028.pdf
         # Difference between critic scores received by generated output vs real video
         # Lower values mean that the real video samples are receiving higher scores, therefore
         # gradient descent maximizes discriminator accuracy
         out_size = real_imgs.get_shape().as_list()
         d_cost = tf.reduce_mean(generated_disc) - tf.reduce_mean(real_disc)
-        alpha = tf.random_uniform(
+        alpha = tf.random.uniform(
             shape=[self.batch_size, 1],
             minval=0.,
             maxval=1.
@@ -334,18 +349,29 @@ class ConditionalStyleGAN():
         # Euclidean norm of gradient for each sample
         norm = tf.sqrt(tf.reduce_sum(tf.square(gradients), axis=[1]))
         # Gradient norm penalty is the average distance from 1
-        gradient_penalty = tf.reduce_mean((norm - 1.) ** 2)
+        gradient_penalty = tf.reduce_mean((norm - 1.) ** 2) * gp_lambda
+        epsilon_penalty = tf.reduce_mean(real_disc) * epsilon
 
-        return d_cost + gp_lambda * gradient_penalty
+        return d_cost + gradient_penalty + epsilon_penalty
+
+    def conditioning_loss(self, true_labels, true_pred, gen_pred):
+        ce_true = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(
+            labels=true_labels, logits=true_pred))
+        ce_gen = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(
+            labels=true_labels, logits=gen_pred))
+
+        return ce_true, ce_gen
 
     def generate(self, epoch, save_dir, num_out, conditioning):
-        gen_noise = tf.random_normal([num_out, self.z_dim])
+        gen_noise = tf.random.normal([num_out, self.z_dim])
         fade, ones = tf.constant(1, shape=[num_out, 1]), tf.ones((self.batch_size, 1))
         generated_imgs = self.generator(inputs=[gen_noise, conditioning, fade, ones], training=False)
-        self.save_img(generated_imgs, save_dir, name=str(generated_imgs[0].shape[-2]) + '_' + str(epoch) + '_')
+        self.save_img(generated_imgs, conditioning, save_dir,
+                      name=str(generated_imgs[0].shape[-2]) + '_' + str(epoch) + '_')
 
-    def save_img(self, img_tensor, save_dir, name):
+    def save_img(self, img_tensor, conditioning, save_dir, name):
         img = tf.cast(255 * (img_tensor + 1)/2, tf.uint8)
         for i, ind_img in enumerate(img):
             encoded = tf.image.encode_jpeg(ind_img)
             tf.write_file(os.path.join(save_dir, name + str(i) + '.jpg'), encoded)
+        np.savetxt(os.path.join(save_dir, name + '.txt'), conditioning)
