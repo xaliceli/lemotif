@@ -1,7 +1,7 @@
 import gc
 from flask import Flask, render_template, request
 
-from app import utils
+import utils
 from lemotif import generator
 
 
