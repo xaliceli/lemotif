@@ -12,6 +12,7 @@ from sklearn.model_selection import KFold
 from bert import tokenization
 from bert import modeling
 
+import eval
 import utils as ut
 
 class BERTClassifier():
@@ -123,7 +124,7 @@ class BERTClassifier():
                 pred_values = pred_vals[label].values
                 thresh_preds = np.where(pred_values >= t, 1, 0)
                 for m in metrics:
-                    evaluator = getattr(ut, m)
+                    evaluator = getattr(eval, m)
                     score = evaluator(gt_values, thresh_preds)
                     scores[label][t][m] = score
                     if score > best_score and m == opt:
@@ -131,6 +132,7 @@ class BERTClassifier():
             all_gt, all_pred = np.concatenate((all_gt, gt_values)), np.concatenate((all_pred, best_preds))
             scores[label]['best_thresh'] = best_thresh
 
+        scores['all'] = {}
         for m in metrics:
             evaluator = getattr(ut, m)
             score = evaluator(all_gt, all_pred)

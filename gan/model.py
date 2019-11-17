@@ -38,10 +38,10 @@ class ConditionalGAN():
         self.best_disc_loss = None
         self.fade = None
 
-    def init_models(self, start_size, lr, b1, b2):
+    def init_models(self, start_size, fade_on, lr, b1, b2):
         # Build models
-        self.generator = self.generator_model(start_size)
-        self.discriminator = self.discriminator_model(start_size)
+        self.generator = self.generator_model(start_size, fade_on)
+        self.discriminator = self.discriminator_model(start_size, fade_on)
 
         if self.verbose:
             print(self.generator.summary())
@@ -94,7 +94,8 @@ class ConditionalGAN():
         else:
             loop_start_size = start_size
             checkpt_n = 0
-        self.init_models(loop_start_size, lr, b1, b2)
+        fade_on = True if 0 < checkpt_n < iterations / 2 / save_int and loop_start_size > start_size else False
+        self.init_models(loop_start_size, fade_on, lr, b1, b2)
         if latest_checkpoint:
             self.checkpoint.restore(latest_checkpoint)
 
@@ -104,13 +105,13 @@ class ConditionalGAN():
 
         for resolution in range(resolutions):
             print('Resolution: ', loop_start_size*2**resolution)
-            self.fade = True if (resolution > 0 or (loop_start_size > start_size and checkpt_n < 20)) else False
-            progress = tqdm(train_data.take(iterations))
+            stage_iterations = max(0, iterations - checkpt_n * save_int) if resolution == 0 else iterations
+            progress = tqdm(train_data.take(stage_iterations))
             for iteration, (imgs, conditioning) in enumerate(progress):
                 if resolution < resolutions - 1:
                     pool_factor = 2 ** (resolutions - resolution - 1)
                     imgs = kl.AveragePooling2D(pool_factor, padding='same')(imgs)
-                fade = min(iteration/(iterations//2.0), 1.0) if self.fade else 1.0
+                fade = min(iteration/(stage_iterations//2.0), 1.0) if (resolution > 0 and fade_on) else 1.0
                 fade = tf.constant(fade, shape=(self.batch_size, 1), dtype=tf.float32)
                 self.train_step(imgs=imgs, conditioning=conditioning, fade=fade, ones=ones)
                 progress.set_postfix(best_gen_loss=self.best_gen_loss.numpy(), best_disc_loss=self.best_disc_loss.numpy(),
@@ -127,7 +128,7 @@ class ConditionalGAN():
                         random_label[np.random.randint(0, self.num_classes)] = 1
                         random_classes.append(random_label)
                     conditioning = tf.cast(tf.stack(random_classes), tf.float32)
-                    self.generate(iteration + 1, save_dir, self.batch_size, conditioning)
+                    self.generate(iteration + 1, save_dir, self.batch_size, conditioning, fade)
                     if self.save_checkpts:
                         self.checkpoint.save(
                             file_prefix=os.path.join(save_dir,
@@ -138,12 +139,12 @@ class ConditionalGAN():
                 self.update_models(loop_start_size*2**resolution)
 
 
-    def generator_model(self, out_size, start_size=8, start_filters=256):
+    def generator_model(self, out_size, fade_outputs, start_size=8, start_filters=512):
 
         # Fading function
         def blend_resolutions(upper, lower, alpha):
             upper = tf.multiply(upper, alpha)
-            lower = tf.multiply(lower, tf.subtract(1, alpha))
+            lower = tf.multiply(lower, tf.subtract(1.0, alpha))
             return kl.Add()([upper, lower])
 
         # For now we start at 8x8 and upsample by 2x each time
@@ -213,29 +214,37 @@ class ConditionalGAN():
                 lower_res = x
 
         # Conversion to 3-channel color
-        # This is explicitly defined so we can reuse it for the upsampled lower-resolution frames as well
         convert_to_image = kl.Conv2D(filters=3, kernel_size=1, strides=1, padding='same',
                                      kernel_initializer=self.conv_init, use_bias=True, activation='tanh',
-                                     name='conv_to_img_'+str(x.get_shape().as_list()[-1]))
+                                     name='conv_to_img_' + str(x.get_shape().as_list()[-1]))
+        pre_img_filters = x.get_shape().as_list()[-1]
         x = convert_to_image(x)
 
-        # Fade output of previous resolution stage into final resolution stage
-        if self.fade and lower_res:
+        if fade_outputs:
+            if lower_res.get_shape().as_list()[-1] == pre_img_filters:
+                convert_to_image_lower = convert_to_image
+            else:
+                convert_to_image_lower = kl.Conv2D(filters=3, kernel_size=1, strides=1, padding='same',
+                                                   kernel_initializer=self.conv_init, use_bias=True,
+                                                   activation='tanh',
+                                                   name='conv_to_img_' + str(
+                                                       lower_res.get_shape().as_list()[-1]))
+            # Fade output of previous resolution stage into final resolution stage
             lower_upsampled = kl.UpSampling2D(interpolation='bilinear')(lower_res)
-            lower_upsampled = convert_to_image(lower_upsampled)
-            x = kl.Lambda(lambda x, y, alpha: blend_resolutions(x, y, alpha))([x, lower_upsampled, fade])
+            lower_upsampled = convert_to_image_lower(lower_upsampled)
+            x = kl.Lambda(lambda args: blend_resolutions(args[0], args[1], args[2]))([x, lower_upsampled, fade])
 
         return tf.keras.models.Model(inputs=[z, conditioning, fade, constant], outputs=x, name='generator')
 
-    def discriminator_model(self, out_size, max_filters=512):
+    def discriminator_model(self, out_size, fade_inputs, max_filters=512):
 
         # Fading function
         def blend_resolutions(upper, lower, alpha):
             upper = tf.multiply(upper, alpha)
-            lower = tf.multiply(lower, tf.subtract(1.0, alpha)[..., tf.newaxis, tf.newaxis, tf.newaxis])
+            lower = tf.multiply(lower, tf.subtract(1.0, alpha))
             return kl.Add()([upper, lower])
 
-        conv_loop = int(np.log2(out_size)) - 3
+        conv_loop = int(np.log2(out_size)) - 2
 
         img = kl.Input(shape=(out_size, out_size, 3,))
         conditioning = kl.Input(shape=(self.num_classes,))
@@ -243,53 +252,60 @@ class ConditionalGAN():
 
         # Convert from RGB
         start_filters = int(max(max_filters/2**conv_loop, 4))
-        converted = kl.Conv2D(filters=int(start_filters/2), kernel_size=1, strides=1, padding='same',
-                      kernel_initializer=self.conv_init, use_bias=True, name='conv_from_img_'+str(out_size))(img)
-        # First convolution downsamples by factor of 2
-        x = kl.Conv2D(filters=start_filters, kernel_size=4, strides=2, padding='same',
-                      kernel_initializer=self.conv_init,
-                      name='conv_'+str(out_size/2)+'_'+str(start_filters))(converted)
-
-        # Calculate discriminator score using alpha-blended combination of new discriminator layer outputs
-        # versus downsampled version of input images
-        if self.fade:
-            downsampled = kl.AveragePooling2D(pool_size=(2, 2), padding='same')(converted)
-            x = kl.Lambda(lambda args: blend_resolutions(args[0], args[1], args[2]))([x, downsampled, fade])
-        x = kl.BatchNormalization()(x)
+        x = kl.Conv2D(filters=int(start_filters), kernel_size=1, strides=1, padding='same',
+                      kernel_initializer=self.conv_init, use_bias=True,
+                      name='conv_from_img_'+str(out_size))(img)
         x = kl.LeakyReLU(.2)(x)
 
+        if fade_inputs:
+            # Calculate discriminator score using alpha-blended combination of new discriminator layer outputs
+            # versus downsampled version of input images
+            downsampled = kl.AveragePooling2D(pool_size=(2, 2), padding='same')(img)
+            downsampled = kl.Conv2D(filters=int(start_filters*2), kernel_size=1, strides=1, padding='same',
+                                    kernel_initializer=self.conv_init, use_bias=True,
+                                    name='conv_from_img_'+str(out_size/2))(downsampled)
+            downsampled = kl.LeakyReLU(.2)(downsampled)
+
         for resolution in range(conv_loop):
-            filters = start_filters * 2**(resolution + 1)
+            filters = start_filters * 2 ** (resolution + 1)
             x = kl.Conv2D(filters=filters, kernel_size=3, strides=1, padding='same',
                           kernel_initializer=self.conv_init,
-                          name='conv_' + str(resolution) + '_0_' + str(out_size / 2**(resolution+2))+'_'+str(filters))(x)
+                          name='conv_' + str(resolution) + '_0_' + str(out_size / 2 ** (resolution)) + '_' + str(
+                              filters))(x)
             x = kl.LeakyReLU(.2)(x)
-            x = kl.Conv2D(filters=filters, kernel_size=3, strides=2, padding='same',
+            x = kl.Conv2D(filters=filters, kernel_size=3, strides=1, padding='same',
                           kernel_initializer=self.conv_init,
-                          name='conv_' + str(resolution) + '_1_'+ str(out_size / 2**(resolution+2))+'_'+str(filters))(x)
+                          name='conv_' + str(resolution) + '_1_' + str(out_size / 2 ** (resolution)) + '_' + str(
+                              filters))(x)
             x = kl.LeakyReLU(.2)(x)
+            x = kl.AveragePooling2D(pool_size=(2, 2), padding='same')(x)
+
+            if resolution == 0 and fade_inputs:
+                x = kl.Lambda(lambda args: blend_resolutions(args[0], args[1], args[2]))([x, downsampled, fade])
 
         # Convert to single value
         x = kl.Flatten()(x)
 
         # Label prediction
-        label_pre = kl.Dense(max_filters/16,
+        label_pre = kl.Dense(max_filters/4,
                              name='dense_'+str(x.get_shape().as_list()[-1]))(x)
         labels_out = kl.Dense(self.num_classes,
-                              name='dense_to_labels_'+str(x.get_shape().as_list()[-1]))(label_pre)
+                              name='dense_to_labels_'+str(label_pre.get_shape().as_list()[-1]))(label_pre)
 
         # Discriminator score
         x = tf.concat((x, conditioning), 1)
-        x = kl.Dense(max_filters/16, name='dense_'+str(x.get_shape().as_list()[-1]))(x)
+        x = kl.Dense(max_filters/4, name='dense_'+str(x.get_shape().as_list()[-1]))(x)
         x = kl.Dense(1, name='dense_to_score_'+str(x.get_shape().as_list()[-1]))(x)
 
         return tf.keras.models.Model(inputs=[img, conditioning, fade], outputs=[x, labels_out], name='discriminator')
+
 
     def update_models(self, size):
         # Updates generator and discriminator models to add new layers corresponding to next resolution size
         # Retains weights previously learned from lower resolutions
         new_size = size*2
-        new_generator, new_discriminator = self.generator_model(new_size), self.discriminator_model(new_size)
+        new_generator = self.generator_model(new_size, fade_outputs=True)
+        new_discriminator = self.discriminator_model(new_size, fade_inputs=True)
         new_gen_layers = [layer.name for layer in new_generator.layers]
         new_disc_layers = [layer.name for layer in new_discriminator.layers]
         for layer in self.generator.layers:
@@ -362,9 +378,9 @@ class ConditionalGAN():
 
         return ce_true, ce_gen
 
-    def generate(self, epoch, save_dir, num_out, conditioning):
+    def generate(self, epoch, save_dir, num_out, conditioning, fade=1.0):
         gen_noise = tf.random.normal([num_out, self.z_dim])
-        fade, ones = tf.constant(1, shape=[num_out, 1]), tf.ones((self.batch_size, 1))
+        fade, ones = tf.constant(fade, shape=[num_out, 1]), tf.ones((self.batch_size, 1))
         generated_imgs = self.generator(inputs=[gen_noise, conditioning, fade, ones], training=False)
         self.save_img(generated_imgs, conditioning, save_dir,
                       name=str(generated_imgs[0].shape[-2]) + '_' + str(epoch) + '_')
