@@ -6,6 +6,7 @@ Visualization helpers.
 import cv2
 import numpy as np
 import random
+from PIL import ImageFont, ImageDraw, Image
 
 
 def rgb_to_hsv(rgb):
@@ -94,9 +95,14 @@ def fill_canvas(canvas, background, mask, size, icon_resized, start, adj_y, icon
     return canvas
 
 
-def apply_shape(canvas, icons, topics, size, border_color, background):
+def shape_bool_mask(icons, topics, size, border_color):
     outline_mask = fill_color(cv2.resize(icons[random.choice(topics)], size), (0, 0, 0), border_color) / 255
     outline_mask = ~outline_mask.astype(bool)
+    return outline_mask
+
+
+def apply_shape(canvas, icons, topics, size, border_color, background):
+    outline_mask = shape_bool_mask(icons, topics, size, border_color)
     final_canvas = np.ones((size[0], size[1], 3))
     final_canvas[..., :] = background
     final_canvas[outline_mask] = canvas[outline_mask]
@@ -104,12 +110,18 @@ def apply_shape(canvas, icons, topics, size, border_color, background):
 
 
 def add_labels(canvas, topics, emotions, colors):
+    pil_im = Image.fromarray(canvas.astype('uint8'))
+    draw = ImageDraw.Draw(pil_im)
+    font = ImageFont.truetype('/System/Library/Fonts/HelveticaNeue.ttc', 22)
+
     for topic in topics:
-        cv2.putText(canvas, topic, (0, 20),
-                    fontFace=cv2.FONT_HERSHEY_DUPLEX, fontScale=.8, color=(0, 0, 0), thickness=1)
-    emotion_start = 20 * len(topics[-1])
+        draw.text((10, canvas.shape[0]-28), '#' + topic, font=font, fill=(0, 0, 0))
+
+    x_offset = font.getsize('#' + topic)[0] + 15
     for emotion in emotions:
-        cv2.putText(canvas, emotion, (emotion_start, 20),
-                    fontFace=cv2.FONT_HERSHEY_DUPLEX, fontScale=.8, color=colors[emotion]['rgb'], thickness=1)
-        emotion_start += 20 * len(emotion)
+        draw.text((x_offset, canvas.shape[0]-28), '#' + emotion, font=font, fill=colors[emotion]['rgb'][::-1])
+        x_offset += font.getsize('#' + emotion)[0] + 10
+
+    canvas = np.array(pil_im)
+
     return canvas

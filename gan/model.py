@@ -1,5 +1,5 @@
 """
-model.py
+condgan.py
 Conditional GAN model
 """
 import os

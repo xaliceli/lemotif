@@ -7,12 +7,17 @@ import glob
 import os
 
 import cv2
+import numpy as np
+import pandas as pd
 
-from assets.colors import colors_dict
+from lemotif.colors import colors_dict
 from lemotif.visualizations.utils import rgb_to_hsv
 from lemotif.visualizations.carpet import carpet
+from lemotif.visualizations.circle import circle
 from lemotif.visualizations.overlap import overlap
+from lemotif.visualizations.string import string
 from lemotif.visualizations.tiles import tiles
+from lemotif.visualizations.autoencoder import ae as watercolors
 
 
 def load_assets(input_dir='../assets'):
@@ -23,7 +28,7 @@ def load_assets(input_dir='../assets'):
         input_dir (str): Folder where assets reside.
     """
     icons_dict = {}
-    for icon in glob.glob(os.path.join(input_dir, 'icons', '*.png')):
+    for icon in glob.glob(os.path.join(input_dir, '*.png')):
         name = os.path.basename(icon)[:-4]
         icons_dict[name] = cv2.imread(icon, -1)
     for color in colors_dict.keys():
@@ -33,7 +38,8 @@ def load_assets(input_dir='../assets'):
     return icons_dict, colors_dict
 
 
-def generate_visual(icons, colors, topics, emotions, algorithm, out='../output', size=(500, 500), summary=False, **args):
+def generate_visual(icons, colors, topics, emotions, algorithm, out_dir='../output', size=(500, 500), summary=False,
+                    concat=True, **args):
     """
     Generates visualization based on inputs.
 
@@ -45,33 +51,87 @@ def generate_visual(icons, colors, topics, emotions, algorithm, out='../output',
         algorithm (function): Algorithm to generate visual using.
     """
     algorithm = globals()[algorithm]
-    outputs = [algorithm(t, e, icons, colors, size, **args) for t, e in zip(topics, emotions)]
+    all_out = []
+    for id, (sub_t, sub_e) in enumerate(zip(topics, emotions)):
+        # outputs = [algorithm(t, e, icons, colors, size, **args) for t, e in zip(sub_t, sub_e)]
+        outputs = [algorithm(sub_t, sub_e, icons, colors, size, **args)]
 
-    if summary:
-        summary_args = args.copy()
-        summary_args['border_shape'] = False
-        outputs.append(algorithm(
-            [item for sublist in topics for item in sublist],
-            [item for sublist in emotions for item in sublist],
-            icons, colors, size, **summary_args)
-        )
-    if out is not None:
-        if not os.path.isdir(out):
-            os.mkdir(out)
-        for i, vis in enumerate(outputs):
-            cv2.imwrite(os.path.join(out, str(i) + '.png'), vis)
-    return outputs
+        if summary:
+            summary_args = args.copy()
+            summary_args['border_shape'] = False
+            outputs.append(algorithm(
+                [item for sublist in topics for item in sublist],
+                [item for sublist in emotions for item in sublist],
+                icons, colors, size, **summary_args)
+            )
+        if out_dir is not None:
+            if not os.path.isdir(out_dir):
+                os.mkdir(out_dir)
+            if concat:
+                final = np.zeros((outputs[0].shape[0], outputs[0].shape[1]*len(sub_t), 3))
+                for i, vis in enumerate(outputs):
+                    final[:, i*outputs[0].shape[1]:(i+1)*outputs[0].shape[1], :] = vis
+                print(os.path.join(out_dir, str(id) + '.png'))
+                cv2.imwrite(os.path.join(out_dir, str(id) + '.png'), final)
+            else:
+                for i, vis in enumerate(outputs):
+                    cv2.imwrite(os.path.join(out_dir, str(i) + '.png'), vis)
+
+        all_out += outputs
+
+    return all_out
 
 
 if __name__ == '__main__':
+    import math
+
     icons, colors = load_assets()
-    topics = [['sleep'], ['work'], ['school']]
-    emotions = [['happy', 'satisfied'], ['anxious', 'afraid'], ['proud', 'calm']]
+
+    topics, emotions = [], []
+    data_path = '/Users/alice/Google Drive/Colab Data/lemotif/data/input_100.csv'
+    df = pd.read_csv(data_path)
+
+    for i, row in df.iterrows():
+        f_use, t_use = [], []
+        for set in range(3):
+            if not isinstance(row['topic_and_feelings_' + str(set+1)], float):
+                t, f = row['topic_and_feelings_' + str(set+1)].split(' made me feel ')
+                f = f.split(' ')
+                f = [i.replace('.', '') for i in f]
+                t_use.append([t.lower()])
+                f_use.append(f)
+        topics.append(t_use)
+        emotions.append(f_use)
+
+    # t_names = np.array([c.replace('Answer.t1.','') for c in df.columns if 't1' in c])
+    # f_names = np.array([c.replace('Answer.f1.','') for c in df.columns if 'f1' in c])
+    #
+    # f_idx_set, t_idx_set = [], []
+    # for set in ['1', '2', '3']:
+    #     f_cols = [col for col in df.columns if 'f' + set in col]
+    #     t_cols = [col for col in df.columns if 't' + set in col]
+    #     f_idx = [df.columns.get_loc(c) for c in f_cols]
+    #     t_idx = [df.columns.get_loc(c) for c in t_cols]
+    #     f_idx_set.append(f_idx)
+    #     t_idx_set.append(t_idx)
+    #
+    # for i, row in df.iterrows():
+    #     f_use, t_use = [], []
+    #     for set in range(3):
+    #         t, f = np.array(row.values[t_idx_set[set]]).astype(bool), np.array(row.values[f_idx_set[set]]).astype(bool)
+    #         t_true, f_true = t_names[t], f_names[f]
+    #         t_use.append(list(t_true))
+    #         f_use.append(list(f_true))
+    #     topics.append(t_use)
+    #     emotions.append(f_use)
+
+    # topics = [['sleep'], ['work'], ['school']]
+    # emotions = [['happy', 'satisfied'], ['anxious', 'afraid'], ['proud', 'calm']]
 
     # Lemotif adjustable settings
     args = {}
     # Algorithm for output
-    args['algorithm'] = 'carpet'
+    args['algorithm'] = 'tiles'
     # Canvas size for output
     args['size'] = (500, 500)
     # Canvas background in BGR format
@@ -81,7 +141,7 @@ if __name__ == '__main__':
     # Standard deviation of a normal distribution centered at 1 from which icon resizing factors are sampled
     args['size_flux'] = 0.33
     # Number of times the canvas is iterated over; smaller numbers retain appearance of shapes, larger numbers appear more painterly
-    args['passes'] = 10
+    args['passes'] = 8
     # Minimum incremental distance as factor of icon size before new shape can be placed. Lower results in more overlap.
     args['inc_floor'] = 0.5
     # Maximum incremental distance as factor of icon size before new shape can be placed. Lower results in more overlap.
@@ -93,6 +153,8 @@ if __name__ == '__main__':
     # If True, randomly select topic for border shape as opposed to using square.
     args['border_shape'] = True
     # Scalar representing the relative brightness value of borders
-    args['border_color'] = 0.5
+    args['border_color'] = .75
+
+    args['out_dir'] = '/Users/alice/School/vil-lemotif/lemotif/output/tile'
 
     generate_visual(icons, colors, topics, emotions, **args)

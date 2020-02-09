@@ -6,14 +6,19 @@ body,
 html {
     margin: 0;
     padding: 0;
-    font-family: 'Open Sans', 'Helvetica', sans-serif;
+    font-family: 'Rubik', 'Helvetica', sans-serif;
     color: #333;
 }
 
 h1, h2, h3 {
-    font-family: 'IBM Plex Serif', 'Playfair Display', serif;
+    font-family: 'Rubik', 'Helvetica', sans-serif;
     /*color: #0037FF;*/
     margin: 1rem 0 0 0;
+}
+
+h3 {
+    font-size: 1rem;
+    font-weight: normal;
 }
 
 p {
@@ -57,7 +62,7 @@ main {
 
 textarea, input.subjects, input.emotions {
     margin-top: .5rem;
-    font-family: 'Open Sans', 'Helvetica', sans-serif;
+    font-family: 'Rubik', sans-serif;
     color: #333;
     border: 1px solid #ededed;
     font-size: .9025rem;
@@ -65,7 +70,7 @@ textarea, input.subjects, input.emotions {
 
 textarea {
     width: 80%;
-    height: 125px;
+    height: 75px;
 }
 
 textarea:focus, input:focus {
@@ -101,7 +106,7 @@ input.emotions {
     padding: .25rem .25rem;
     height: 1rem;
     font-size: .9025rem;
-    font-family: 'Open Sans', 'Helvetica', sans-serif;
+    font-family: 'Rubik', 'Helvetica', sans-serif;
     opacity: .5;
 }
 
@@ -261,7 +266,7 @@ input[type="submit"], input[type="submit"].active {
     color: #fff;
     border: none;
     padding: .5rem;
-    font-family: 'Open Sans', 'Helvetica', sans-serif;
+    font-family: 'Rubik', 'Helvetica', sans-serif;
     font-size: .9025rem;
     cursor: pointer;
 }

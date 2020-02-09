@@ -15,7 +15,7 @@ def set_args():
     # Algorithm to use
     args['algorithm'] = 'tiles'
     # Canvas size for output
-    args['size'] = (500, 500)
+    args['size'] = (256, 256)
     # Canvas background in BGR format
     args['background'] = (255, 255, 255)
     # Base size of icon relative to canvas size
@@ -41,16 +41,14 @@ def set_args():
     # Summary motif
     args['summary'] = False
 
+    # AE specific args
+    args['model_dir'] = 'models/ae'
+
     values = {
-        'text': '',
-        'subjects1': '',
-        'subjects2': '',
-        'subjects3': '',
-        'subjects4': '',
-        'emotions1': '',
-        'emotions2': '',
-        'emotions3': '',
-        'emotions4': ''
+        'text1': '',
+        'text2': '',
+        'text3': '',
+        'text4': ''
     }
 
     return args, values

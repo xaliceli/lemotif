@@ -5,14 +5,14 @@ Carpet visualization
 import gc
 import cv2
 import numpy as np
-import skimage
+from skimage import measure
 import random
 
 from lemotif.visualizations.utils import apply_shape, add_labels
 
 
 def carpet(topics, emotions, icons, colors, size, background=(255, 255, 255),
-           border_shape=True, border_color=None, text=False,
+           border_shape=True, border_color=None, text=True,
            tile_ratio=.05, line_width=1, rotations=4, rot_degree=45, num_lines=3,
            **kwargs):
     if not set(topics) <= set(icons.keys()):
@@ -61,7 +61,7 @@ def carpet(topics, emotions, icons, colors, size, background=(255, 255, 255),
     canvas = np.uint8(canvas[..., 0])
 
     # Find connected components
-    connections = skimage.measure.regionprops(skimage.measure.label(canvas, connectivity=1))
+    connections = measure.regionprops(measure.label(canvas, connectivity=1))
 
     # Canvas for output
     canvas = np.zeros((size[0], size[1], 3))

@@ -5,14 +5,14 @@ Tile visualization
 import gc
 import cv2
 import numpy as np
-import skimage
+from skimage import measure
 import random
 
 from lemotif.visualizations.utils import apply_shape, add_labels
 
 
 def tiles(topics, emotions, icons, colors, size, background=(255, 255, 255),
-          border_shape=True, border_color=None, text=False,
+          border_shape=True, border_color=None, text=True,
           line_width=1, step=10, dir_prob=0.5, **kwargs):
     if not set(topics) <= set(icons.keys()):
         return 'Error: Topics outside of presets.'
@@ -31,7 +31,7 @@ def tiles(topics, emotions, icons, colors, size, background=(255, 255, 255),
     canvas = np.uint8(canvas[..., 0])
 
     # Find connected components
-    connections = skimage.measure.regionprops(skimage.measure.label(canvas, connectivity=1))
+    connections = measure.regionprops(measure.label(canvas, connectivity=1))
 
     # Canvas for output
     canvas = np.zeros((size[0], size[1], 3))

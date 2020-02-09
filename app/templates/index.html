@@ -3,11 +3,11 @@
 <head>
     <title>Lemotif: Affective Visual Journal</title>
     <link href="{{ url_for('static', filename='stylesheet.css')}}" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css?family=Open+Sans|IBM+Plex+Serif|Playfair+Display&display=swap"
+    <link href="https://fonts.googleapis.com/css?family=Rubik&display=swap"
           rel="stylesheet">
     <script type="text/javascript">
-        var emotionsDict = {{emotions | tojson}};
-        var subjectsList = {{subjects | tojson}};
+        var emotionsDict = {{ emotions | tojson }};
+        var subjectsList = {{ subjects | tojson }};
         var img_url = '/static/images/';
     </script>
 </head>
@@ -17,35 +17,15 @@
     <div class="container">
         <div id='input'>
             <h1>Lemotif: Affective Visual Journal</h1>
-            <h3>How was your day?</h3>
             <form method='post' id="inputs" action='/'>
-                <textarea id="text" name="text">{{values['text']}}</textarea>
                 {% for n in range(4) %}
                 {% if n == 0 %}
-                <h3>What was the most salient theme of your day? How did it make you feel?</h3>
+                <h3>What was the most salient part of your day? How did it make you feel?</h3>
                 {% else %}
-                <h3>Optional: What was another salient theme? How did it make you feel?</h3>
+                <h3>Optional: What was another salient part of your day? How did it make you feel?</h3>
                 {% endif %}
-                {% if values['subjects' ~ (loop.index0 + 1)] == '' %}
-                <input id={{'subjects' ~ (loop.index0 + 1)}}
-                       name={{'subjects' ~ (loop.index0 + 1)}}
-                       class="subjects"
-                       placeholder="Select a theme.">
-                {% else %}
-                <input id={{'subjects' ~ (loop.index0 + 1)}}
-                       name={{'subjects' ~ (loop.index0 + 1)}}
-                       class="subjects" value="{{values['subjects' ~ (loop.index0 + 1)]}}">
-                {% endif %}
-                {% if values['emotions' ~ (loop.index0 + 1)] == '' %}
-                <input id={{'emotions' ~ (loop.index0 + 1)}}
-                       name={{'emotions' ~ (loop.index0 + 1)}}
-                       class="emotions"
-                       placeholder="Select any emotions.">
-                {% else %}
-                <input id={{'emotions' ~ (loop.index0 + 1)}}
-                       name={{'emotions' ~ (loop.index0 + 1)}}
-                       class="emotions" value="{{values['emotions' ~ (loop.index0 + 1)]}}">
-                {% endif %}
+                <textarea id={{'text' ~ (loop.index0 + 1)}} name={{'text' ~ (loop.index0 + 1)}}
+                          placeholder='Write a little about something that happened today and how you felt.'>{{values['text' ~ (loop.index0 + 1)]}}</textarea>
                 {% endfor %}
                 <br><br>
                 <input type="submit" value=">> Generate Lemotif" form="inputs">
@@ -53,29 +33,15 @@
                 <div id="settings">
                     <div class="slider-container">
                         Lemotif Style<br>
-                        {% for algorithm in ['carpet', 'overlap', 'tiles'] %}
-                            {% if settings['algorithm'] == algorithm %}
-                                {% set check = 'checked' %}
-                            {% else %}
-                                {% set check = '' %}
-                            {% endif %}
-                            <input type="radio" id="algo_{{algorithm}}" name="algorithm" value="{{algorithm}}" {{check}}>
-                            <label for="algo_{{algorithm}}">{{algorithm | capitalize}}</label>
-                        {% endfor %}
-                    </div>
-                    <div class="slider-container">
-                        Canvas Shape<br>
-                        {% if settings['border_shape'] %}
-                        {% set check_true = 'checked' %}
-                        {% set check_false = '' %}
+                        {% for algorithm in ['carpet', 'circle', 'glass', 'tiles', 'string', 'watercolors'] %}
+                        {% if settings['algorithm'] == algorithm %}
+                        {% set check = 'checked' %}
                         {% else %}
-                        {% set check_true = '' %}
-                        {% set check_false = 'checked' %}
+                        {% set check = '' %}
                         {% endif %}
-                        <input type="radio" id="border_shape_off" name="border_shape" value="False" {{check_false}}>
-                        <label for="border_shape_off">Square</label>
-                        <input type="radio" id="border_shape_on" name="border_shape" value="True" {{check_true}}>
-                        <label for="border_shape_on">Subject</label>
+                        <input type="radio" id="algo_{{algorithm}}" name="algorithm" value="{{algorithm}}" {{check}}>
+                        <label for="algo_{{algorithm}}">{{algorithm | capitalize}}</label>
+                        {% endfor %}
                     </div>
                     <div class="slider-container">
                         <label for="icon_ratio">Icon Size: Percent of Canvas Size</label><br>
@@ -140,28 +106,31 @@
             {{ error }}
             {% endif %}
             {% if images %}
-            {% for image in images %}
-            <div class="image-wrapper">
-                <img src='{{image}}'><br>
-                <div class="image-label">
-                    {{ values['subjects' ~ (loop.index0 + 1)]}}:
-                    {% set emotions_list = values['emotions' ~ (loop.index0 + 1)].split(', ') %}
-                    {% for emot in emotions_list %}
-                    <span style="background-color: hsl({{emotions[emot]['hsv'][0]}}, {{emotions[emot]['hsv'][1]}}%, 85%);
+            <div id='motifs'>
+                {% for image in images %}
+                <div class="image-wrapper">
+                    <img src='{{image}}'><br>
+                    <div class="image-label">
+                        {{ subj_labels[loop.index0][0]}}:
+                        {# {% set emotions_list = values['emotions' ~ (loop.index0)].split(', ') %} #}
+                        {% for emot in emot_labels[loop.index0] %}
+                        <span style="background-color: hsl({{emotions[emot]['hsv'][0]}}, {{emotions[emot]['hsv'][1]}}%, 85%);
                                  color: hsl({{emotions[emot]['hsv'][0]}}, {{emotions[emot]['hsv'][1]}}%, 15%);
                                  padding: .25rem; margin: 0 .5rem;">
                                  {{ emot }}
                     </span>
-                    {% endfor %}
+                        {% endfor %}
+                    </div>
                 </div>
+                {% endfor %}
             </div>
-            {% endfor %}
             {% endif %}
         </div>
     </div>
 </main>
 <script src="{{ url_for('static', filename='jquery-3.4.1.min.js')}}"></script>
 <script src="{{ url_for('static', filename='jquery-ui.min.js')}}"></script>
+<script src="{{ url_for('static', filename='html2canvas.min.js')}}"></script>
 <script src="{{ url_for('static', filename='script.js')}}"></script>
 </body>
 </html>

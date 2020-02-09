@@ -5,7 +5,7 @@ Train model.
 
 import tensorflow as tf
 
-from model import ConditionalGAN
+from condgan import ConditionalGAN
 from data import DataGenerator
 from colors import colors_dict
 
