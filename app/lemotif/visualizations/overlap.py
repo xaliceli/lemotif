@@ -18,6 +18,7 @@ def overlap(topics, emotions, icons, colors, size,
         return 'Error: Topics outside of presets.'
     if not set(emotions) <= set(colors.keys()):
         return 'Error: Emotions outside of presets.'
+    size = (500, 500) # Overriding because smaller values run into issues with sub-shape masking
     base_size = int(min(size) * icon_ratio)
     icons_resized = [cv2.resize(icons[topic], (base_size, base_size)) for topic in topics]
     colors_list = [colors[emotion] for emotion in emotions]

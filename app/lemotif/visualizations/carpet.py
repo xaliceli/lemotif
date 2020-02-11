@@ -13,7 +13,7 @@ from lemotif.visualizations.utils import apply_shape, add_labels
 
 def carpet(topics, emotions, icons, colors, size, background=(255, 255, 255),
            border_shape=True, border_color=None, text=True,
-           tile_ratio=.05, line_width=1, rotations=4, rot_degree=45, num_lines=3,
+           tile_ratio=.1, line_width=1, rotations=4, rot_degree=45, num_lines=3,
            **kwargs):
     if not set(topics) <= set(icons.keys()):
         return 'Error: Topics outside of presets.'

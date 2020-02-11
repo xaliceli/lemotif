@@ -12,7 +12,7 @@ from scipy.special import comb
 from lemotif.visualizations.utils import apply_shape, add_labels, shape_bool_mask
 
 
-def string(topics, emotions, icons, colors, size, background=(255, 255, 255), n_lines=150, line_width=4,
+def string(topics, emotions, icons, colors, size, background=(255, 255, 255), n_lines=150, line_width=5,
            border_shape=True, border_color=None, text=True, **kwargs):
     if not set(topics) <= set(icons.keys()):
         return 'Error: Topics outside of presets.'

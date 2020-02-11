@@ -18,6 +18,7 @@ class BERTClassifier():
                  model_dir,
                  out_dir,
                  n_classes,
+                 batch_size=4,
                  max_seq_len=128,
                  vocab='vocab.txt',
                  init_ckpt='bert_model.ckpt',
@@ -26,11 +27,14 @@ class BERTClassifier():
         self.out_dir = out_dir
         self.n_classes = n_classes
         self.max_seq_len = max_seq_len
+        self.batch_size = batch_size
         self.vocab = os.path.join(model_dir, vocab)
         self.init_ckpt = os.path.join(model_dir, init_ckpt)
         self.config = os.path.join(model_dir, config)
 
         self.model = self.load_models()
+
+        print('BERT model initialized.')
 
     def load_models(self):
         bert_config = modeling.BertConfig.from_json_file(self.config)
@@ -55,7 +59,7 @@ class BERTClassifier():
         estimator = tf.estimator.Estimator(
             model_fn=model_fn,
             config=run_config,
-            params={"batch_size": 4})
+            params={"batch_size": self.batch_size})
 
         return estimator
 

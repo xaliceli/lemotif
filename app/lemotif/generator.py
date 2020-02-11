@@ -38,8 +38,8 @@ def load_assets(input_dir='../assets'):
     return icons_dict, colors_dict
 
 
-def generate_visual(icons, colors, topics, emotions, algorithm, out_dir='../output', size=(500, 500), summary=False,
-                    concat=True, **args):
+def generate_visual(icons, colors, topics, emotions, algorithm, out_dir=None, size=(500, 500), summary=False,
+                    concat=True, all_styles=False, **args):
     """
     Generates visualization based on inputs.
 
@@ -53,8 +53,12 @@ def generate_visual(icons, colors, topics, emotions, algorithm, out_dir='../outp
     algorithm = globals()[algorithm]
     all_out = []
     for id, (sub_t, sub_e) in enumerate(zip(topics, emotions)):
-        # outputs = [algorithm(t, e, icons, colors, size, **args) for t, e in zip(sub_t, sub_e)]
-        outputs = [algorithm(sub_t, sub_e, icons, colors, size, **args)]
+        sub_t = [sub_t[0]]
+        if all_styles:
+            all_styles = [carpet, circle, overlap, string, tiles, watercolors]
+            outputs = [a(sub_t, sub_e, icons, colors, size, **args) for a in all_styles]
+        else:
+            outputs = [algorithm(sub_t, sub_e, icons, colors, size, **args)]
 
         if summary:
             summary_args = args.copy()

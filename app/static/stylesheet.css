@@ -70,11 +70,18 @@ textarea, input.subjects, input.emotions {
 
 textarea {
     width: 80%;
-    height: 75px;
+    height: 60px;
 }
 
 textarea:focus, input:focus {
     outline: none;
+}
+
+.instructions {
+    width: 80%;
+    border: 2px solid #333;
+    margin-top: 1rem;
+    padding: 1rem;
 }
 
 input.subjects {
@@ -284,10 +291,19 @@ input[type="submit"]:focus {
         width: 50%;
     }
     #vis {
+        margin-left: 50%;
+        text-align: center;
+    }
+    #input.demo {
         position: fixed;
-        text-align: right;
     }
     .image-wrapper {
         max-width: 40%;
+    }
+    .demo .image-wrapper {
+        max-width: 31%;
+    }
+    .image-label {
+        font-size: 90%;
     }
 }

@@ -8,7 +8,7 @@ import numpy as np
 from lemotif.visualizations.utils import apply_shape, add_labels, shape_bool_mask
 
 
-def circle(topics, emotions, icons, colors, size, background=(255, 255, 255), min_rad_factor=.01, max_rad_factor=.1,
+def circle(topics, emotions, icons, colors, size, background=(255, 255, 255), min_rad_factor=.01, max_rad_factor=.09,
            n_circles=100, max_attempts=1000, border_shape=True, border_color=None, border_width=1, text=True, **kwargs):
     if not set(topics) <= set(icons.keys()):
         return 'Error: Topics outside of presets.'
