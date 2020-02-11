@@ -59,7 +59,7 @@
                                 in the boxes above. What were the most important things that happened and how did
                                 they make you feel?
                             </p>
-                            <p>Once you are done writing, hit the "Generate Motifs" button to see some visual
+                            <p>Once you are done writing, click on the "Generate Motifs" button to see some visual
                                 representations of your day. It may take a few seconds for the images to appear.</p>
                             <p>No user data is saved in this demo.</p>
                         {% endif %}
@@ -162,7 +162,7 @@
                         <div class="image-wrapper">
                             <img src='{{images[style_loop.index0 + (6 * loop.index0)]}}'><br>
                             <div class="image-label">
-                                {{ s[0] }}:
+                                {{ s[0] }}
                                 {% for emot in emot_labels[loop.index0] %}
                                 <span style="background-color: hsl({{emotions[emot]['hsv'][0]}}, {{emotions[emot]['hsv'][1]}}%, 85%);
                                  color: hsl({{emotions[emot]['hsv'][0]}}, {{emotions[emot]['hsv'][1]}}%, 15%);
