@@ -27,11 +27,11 @@
     <div class="container">
         {% if demo %}
         <div id='input' class='demo'>
-            <h1>Lemotif: Affective Visual Journal</h1>
+            <h1>Lemotif: An Affective Visual Journal</h1>
             <form method='post' id="inputs" action="{{ url_for('demo')}}">
                 {% else %}
                 <div id='input'>
-                    <h1>Lemotif: Affective Visual Journal</h1>
+                    <h1>Lemotif: An Affective Visual Journal</h1>
                     <form method='post' id="inputs" action="{{ url_for('home')}}">
                         {% endif %}
                         {% for n in range(n_inputs) %}
@@ -48,14 +48,15 @@
                         {% if demo %}
                         <div class="instructions">
                         {% if completion_code %}
-                            <p>Thank you for trying out our demo! Please review the images to the right and note which
-                                version you like best. You may need to scroll down to see all six styles.</p>
-                            <p>After reviewing all images, please return to your AMT session and enter the
-                                following completion code: <strong>{{ completion_code }}</strong>
+                            <p>Thank you for participating in our study! Please review the images to the right and note
+                                the number of the version you like best. You may need to scroll down to see all six
+                                styles. You will be asked for your favorite style later in this study.</p>
+                            <p>After reviewing all images and choosing the style you like best, please return to your
+                                AMT session and enter the following completion code: <strong>{{ completion_code }}</strong>
                             </p>
                             <p>You may now exit out of this window.</p>
                         {% else %}
-                            <p>Welcome to our demo. Please write a little bit about your day (or the day before)
+                            <p>Welcome to our study. Please write a little bit about your day today (or yesterday)
                                 in the boxes above. What were the most important things that happened and how did
                                 they make you feel?
                             </p>
@@ -155,7 +156,7 @@
                     {% if images %}
                     {% if demo %}
                     <div id='motifs' class='demo'>
-                        {% for style in ['Carpet', 'Circle Packing', 'Glass', 'String Doll', 'Tiles', 'Watercolors'] %}
+                        {% for style in ['Style 1', 'Style 2', 'Style 3', 'Style 4', 'Style 5', 'Style 6'] %}
                         {% set style_loop = loop %}
                         <h3><strong>{{ style }}</strong></h3>
                         {% for s in subj_labels %}

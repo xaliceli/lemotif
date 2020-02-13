@@ -1,3 +1,4 @@
+import csv
 import random
 import string
 from flask import Flask, render_template, request
@@ -90,22 +91,28 @@ def demo():
         args, values = utils.get_args()
 
         error, images_encoded = None, []
-        # try:
-        motifs = generator.generate_visual(icons=subjects,
-                                           colors=emotions,
-                                           topics=subjects_render,
-                                           emotions=emotions_render,
-                                           out_dir=None,
-                                           all_styles=True,
-                                           **args)
+        all_styles = ['carpet', 'circle', 'overlap', 'string', 'tiles', 'watercolors']
+        random.shuffle(all_styles)
+        try:
+            motifs = generator.generate_visual(icons=subjects,
+                                               colors=emotions,
+                                               topics=subjects_render,
+                                               emotions=emotions_render,
+                                               out_dir=None,
+                                               all_styles=all_styles,
+                                               **args)
 
-        for motif in motifs:
-            images_encoded.append(utils.img_to_str(motif))
-        # except:
-        #     error = 'Sorry, there was an error generating motifs for the provided inputs. This demo currently only supports emotions and topics in the dropdown lists. Please try again.'
+            for motif in motifs:
+                images_encoded.append(utils.img_to_str(motif))
+        except:
+            error = 'Sorry, there was an error generating motifs for the provided inputs.'
 
         letters = string.ascii_lowercase
         completion_code = ''.join(random.choice(letters) for i in range(17))
+
+        with open("eval_logs.csv", "a") as log:
+            row = csv.writer(log)
+            row.writerow([completion_code] + all_styles)
 
         return render_template('index.html',
                                emotions=emotions,
