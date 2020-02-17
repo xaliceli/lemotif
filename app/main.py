@@ -24,10 +24,10 @@ def home():
                                settings=args,
                                values=values,
                                error=None,
-                               n_inputs=4)
+                               n_inputs=3)
     elif request.method == 'POST':
         all_text = []
-        for idx in range(4):
+        for idx in range(3):
             text_input = request.form.getlist('text' + str(idx + 1))
             all_text.append(text_input)
         subjects_render, emotions_render = parser.predict(all_text)
@@ -63,73 +63,74 @@ def home():
                                error=error,
                                emot_labels=emotions_render,
                                subj_labels=subjects_render,
-                               n_inputs=4)
-
-
-@app.route('/demo/', methods=['GET', 'POST'])
-def demo():
-    subjects, emotions = generator.load_assets('static/images/icons')
-
-    if request.method == 'GET':
-        args, values = utils.set_args()
-        return render_template('index.html',
-                               emotions=emotions,
-                               subjects=sorted(subjects.keys()),
-                               images=None,
-                               settings=args,
-                               values=values,
-                               error=None,
-                               demo=True,
                                n_inputs=3)
 
-    elif request.method == 'POST':
-        all_text = []
-        for idx in range(3):
-            text_input = request.form.getlist('text' + str(idx + 1))
-            all_text.append(text_input)
-        subjects_render, emotions_render = parser.predict(all_text)
-        args, values = utils.get_args()
 
-        error, images_encoded = None, []
-        all_styles = ['carpet', 'circle', 'overlap', 'string', 'tiles', 'watercolors']
-        random.shuffle(all_styles)
-        try:
-            motifs = generator.generate_visual(icons=subjects,
-                                               colors=emotions,
-                                               topics=subjects_render,
-                                               emotions=emotions_render,
-                                               out_dir=None,
-                                               all_styles=all_styles,
-                                               **args)
-
-            for motif in motifs:
-                images_encoded.append(utils.img_to_str(motif))
-        except:
-            error = 'Sorry, there was an error generating motifs for the provided inputs.'
-
-        letters = string.ascii_lowercase
-        completion_code = ''.join(random.choice(letters) for i in range(17))
-
-        with open("eval_logs.csv", "a") as log:
-            row = csv.writer(log)
-            row.writerow([completion_code] + all_styles)
-
-        return render_template('index.html',
-                               emotions=emotions,
-                               subjects=sorted(subjects.keys()),
-                               images=images_encoded,
-                               settings=args,
-                               values=values,
-                               error=error,
-                               emot_labels=emotions_render,
-                               subj_labels=subjects_render,
-                               demo=True,
-                               n_inputs=3,
-                               completion_code=completion_code)
+# Only used for eval purposes
+# @app.route('/demo/', methods=['GET', 'POST'])
+# def demo():
+#     subjects, emotions = generator.load_assets('static/images/icons')
+#
+#     if request.method == 'GET':
+#         args, values = utils.set_args()
+#         return render_template('index.html',
+#                                emotions=emotions,
+#                                subjects=sorted(subjects.keys()),
+#                                images=None,
+#                                settings=args,
+#                                values=values,
+#                                error=None,
+#                                demo=True,
+#                                n_inputs=3)
+#
+#     elif request.method == 'POST':
+#         all_text = []
+#         for idx in range(3):
+#             text_input = request.form.getlist('text' + str(idx + 1))
+#             all_text.append(text_input)
+#         subjects_render, emotions_render = parser.predict(all_text)
+#         args, values = utils.get_args()
+#
+#         error, images_encoded = None, []
+#         all_styles = ['carpet', 'circle', 'overlap', 'string', 'tiles', 'watercolors']
+#         random.shuffle(all_styles)
+#         try:
+#             motifs = generator.generate_visual(icons=subjects,
+#                                                colors=emotions,
+#                                                topics=subjects_render,
+#                                                emotions=emotions_render,
+#                                                out_dir=None,
+#                                                all_styles=all_styles,
+#                                                **args)
+#
+#             for motif in motifs:
+#                 images_encoded.append(utils.img_to_str(motif))
+#         except:
+#             error = 'Sorry, there was an error generating motifs for the provided inputs.'
+#
+#         letters = string.ascii_lowercase
+#         completion_code = ''.join(random.choice(letters) for i in range(17))
+#
+#         with open("eval_logs.csv", "a") as log:
+#             row = csv.writer(log)
+#             row.writerow([completion_code] + all_styles)
+#
+#         return render_template('index.html',
+#                                emotions=emotions,
+#                                subjects=sorted(subjects.keys()),
+#                                images=images_encoded,
+#                                settings=args,
+#                                values=values,
+#                                error=error,
+#                                emot_labels=emotions_render,
+#                                subj_labels=subjects_render,
+#                                demo=True,
+#                                n_inputs=3,
+#                                completion_code=completion_code)
 
 
 if __name__ == '__main__':
     # This is used when running locally only. When deploying to Google App
     # Engine, a webserver process such as Gunicorn will serve the app. This
     # can be configured by adding an `entrypoint` to app.yaml.
-    app.run(host='127.0.0.1', port=8080, debug=True)
+    app.run(host='127.0.0.1', port=8081, debug=True)

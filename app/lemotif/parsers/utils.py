@@ -532,7 +532,7 @@ def input_fn_builder(features, seq_length, is_training, drop_remainder, num_labe
   return input_fn
 
 
-def create_output(predictions, thresh=.2):
+def create_output(predictions, thresh=.2, max_s=1, max_e=4):
     labels = {'afraid': {'threshold': 0.2, 'type': 'emotion'},
               'angry': {'threshold': 0.1, 'type': 'emotion'},
               'anxious': {'threshold': 0.05, 'type': 'emotion'},
@@ -570,10 +570,16 @@ def create_output(predictions, thresh=.2):
             threshold = labels[label]['threshold'] if thresh == 'auto' else thresh
             if pred >= threshold:
                 if labels[label]['type'] == 'subject':
-                    entry_s.append(label)
+                    entry_s.append((label, pred))
                 else:
-                    entry_e.append(label)
+                    entry_e.append((label, pred))
         if len(entry_s) > 0 and len(entry_e) > 0:
+            entry_s = [x[0] for x in sorted(entry_s, key = lambda x: x[1], reverse=True)]
+            entry_e = [x[0] for x in sorted(entry_e, key = lambda x: x[1], reverse=True)]
+            if len(entry_s) > max_s:
+                entry_s = entry_s[:max_s]
+            if len(entry_e) > max_e:
+                entry_e = entry_e[:max_e]
             predictions_s.append(entry_s)
             predictions_e.append(entry_e)
 

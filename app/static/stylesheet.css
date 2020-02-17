@@ -54,6 +54,7 @@ main {
     margin: 0;
     display: inline-block;
     text-align: center;
+    vertical-align: top;
 }
 
 .image-wrapper img {
@@ -69,7 +70,7 @@ textarea, input.subjects, input.emotions {
 }
 
 textarea {
-    width: 80%;
+    width: 95%;
     height: 60px;
 }
 
@@ -283,27 +284,54 @@ input[type="submit"]:focus {
 }
 
 @media only screen and (min-width: 768px) {
-  /* For mobile phones: */
     .container {
         display: flex;
-    }
-    #input, #vis {
-        width: 50%;
+        justify-content: space-between;
     }
     #vis {
-        margin-left: 50%;
-        text-align: center;
+        width: 50%;
     }
-    #input.demo {
-        position: fixed;
+    #input {
+        width: 45%;
+    }
+    #vis {
+        text-align: right;
     }
     .image-wrapper {
-        max-width: 40%;
-    }
-    .demo .image-wrapper {
         max-width: 32.5%;
     }
     .image-label {
         font-size: 90%;
+    }
+
+    .tooltip {
+        position: relative;
+        display: inline-block;
+    }
+    /* Tooltip text */
+    .tooltip .tooltip-hover {
+        visibility: hidden;
+        width: 120px;
+        height: 120px;
+        text-align: center;
+        padding: 5px 0;
+        border-radius: 6px;
+
+      /* Position the tooltip text - see examples below! */
+        position: absolute;
+        z-index: 1;
+        bottom: 100%;
+    }
+
+    .tooltip-hover img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        overflow: hidden;
+    }
+
+    /* Show the tooltip text when you mouse over the tooltip container */
+    .tooltip:hover .tooltip-hover {
+      visibility: visible;
     }
 }

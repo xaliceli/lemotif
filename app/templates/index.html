@@ -66,7 +66,29 @@
                         {% endif %}
                         </div>
                         {% else %}
-                        <h3 onclick="expand('settings')" class="toggle">Settings &#9662;</h3>
+                        <div class="slider-container">
+                            <h3>Lemotif Style</h3>
+                            <p>Choose a visualization style below to customize your motif.
+                                You can hover over each style's name for a preview of what it looks like.</p>
+                                {% for algorithm in ['carpet', 'circle', 'glass', 'tiles', 'string', 'watercolors'] %}
+                                {% if settings['algorithm'] == algorithm %}
+                                {% set check = 'checked' %}
+                                {% else %}
+                                {% set check = '' %}
+                                {% endif %}
+                                <input type="radio" id="algo_{{algorithm}}" name="algorithm" value="{{algorithm}}"
+                                       {{check}}>
+                                <label for="algo_{{algorithm}}">
+                                    <div class="tooltip">
+                                    {{algorithm | capitalize}}
+                                    <div class="tooltip-hover">
+                                    <img src="static/images/preview/{{algorithm}}.png">
+                                    </div>
+                                    </div>
+                                </label>
+                                {% endfor %}
+                        </div>
+                        {# <h3 onclick="expand('settings')" class="toggle">Settings &#9662;</h3>
                         <div id="settings">
                             <div class="slider-container">
                                 Lemotif Style<br>
@@ -132,8 +154,11 @@
                                 </output>
                             </div>
                         </div>
+
                         <h3 onclick="expand('about')" class="toggle">About &#9662;</h3>
-                        <div id="about"><p>
+                        <div id="about">
+
+                            <h3>About</h3><p>
                             Lemotif is a project by <a href="mailto:xaliceli@gmail.com">Alice Li</a> &
                             <a href="mailto:deviparikh@gmail.com">Devi Parikh</a> building upon the ideas laid out in
                             <a href="https://arxiv.org/pdf/1903.07766.pdf">this paper</a>.
@@ -143,9 +168,9 @@
                             well-being,
                             self-reflection, and opportunities for action.
                             (<a href="http://github.com/xaliceli/lemotif">Source Code</a>)
-                        </p>
-                            <p>This app represents a very early proof-of-concept demo. No user data is stored.</p>
-                        </div>
+                        </p> #}
+                            <p>No user data is stored in this demo.</p>
+                        {#</div>#}
                         {% endif %}
                     </form>
                 </div>
@@ -183,10 +208,8 @@
                                     {# {% set emotions_list = values['emotions' ~ (loop.index0)].split(', ') %} #}
                                     {% for emot in emot_labels[loop.index0] %}
                                     <span style="background-color: hsl({{emotions[emot]['hsv'][0]}}, {{emotions[emot]['hsv'][1]}}%, 85%);
-                                 color: hsl({{emotions[emot]['hsv'][0]}}, {{emotions[emot]['hsv'][1]}}%, 15%);
-                                 padding: .25rem; margin: 0 .5rem;"> {{ emot }} </span>
-                                 {{ emot }}
-                    </span>
+                                    color: hsl({{emotions[emot]['hsv'][0]}}, {{emotions[emot]['hsv'][1]}}%, 15%);
+                                    padding: .1rem; margin: 0 .1rem;"> {{ emot }} </span>
                                     {% endfor %}
                                 </div>
                             </div>
