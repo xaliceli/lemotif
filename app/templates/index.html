@@ -38,13 +38,14 @@
                         {% if n == 0 %}
                         <h3>What was the most salient part of your day? How did it make you feel?</h3>
                         {% else %}
-                        <h3>Optional: What was another salient part of your day? How did it make you feel?</h3>
+                        <h3>What was another salient part of your day? How did it make you feel?</h3>
                         {% endif %}
                         <textarea id={{'text' ~ (loop.index0 + 1)}} name={{'text' ~ (loop.index0 + 1)}}
                                   placeholder='Write a little about something that happened today and how you felt.'>{{values['text' ~ (loop.index0 + 1)]}}</textarea>
                         {% endfor %}
                         <br><br>
-                        <input type="submit" value=">> Generate Motifs" form="inputs">
+                        <input type="submit" value=">> Generate Motifs" form="inputs"
+                               onclick="document.getElementById('vis').innerHTML = 'Please wait, generating...';">
                         {% if demo %}
                         <div class="instructions">
                         {% if completion_code %}
@@ -76,16 +77,14 @@
                                 {% else %}
                                 {% set check = '' %}
                                 {% endif %}
-                                <input type="radio" id="algo_{{algorithm}}" name="algorithm" value="{{algorithm}}"
-                                       {{check}}>
-                                <label for="algo_{{algorithm}}">
                                     <div class="tooltip">
-                                    {{algorithm | capitalize}}
-                                    <div class="tooltip-hover">
-                                    <img src="static/images/preview/{{algorithm}}.png">
+                                        <input type="radio" id="algo_{{algorithm}}" name="algorithm" value="{{algorithm}}"
+                                       {{check}}>
+                                        <label for="algo_{{algorithm}}">{{algorithm | capitalize}}</label>
+                                        <div class="tooltip-hover">
+                                            <img src="static/images/preview/{{algorithm}}.png">
+                                        </div>
                                     </div>
-                                    </div>
-                                </label>
                                 {% endfor %}
                         </div>
                         {# <h3 onclick="expand('settings')" class="toggle">Settings &#9662;</h3>

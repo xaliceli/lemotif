@@ -295,7 +295,7 @@ input[type="submit"]:focus {
         width: 45%;
     }
     #vis {
-        text-align: right;
+        text-align: center;
     }
     .image-wrapper {
         max-width: 32.5%;
