@@ -13,7 +13,7 @@ from io import BytesIO
 def set_args():
     args = {}
     # Algorithm to use
-    args['algorithm'] = 'tiles'
+    args['algorithm'] = 'watercolors'
     # Canvas size for output
     args['size'] = (256, 256)
     # Canvas background in BGR format
