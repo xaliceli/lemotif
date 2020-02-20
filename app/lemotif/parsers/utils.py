@@ -580,7 +580,7 @@ def create_output(predictions, thresh=.2, max_s=1, max_e=4):
                 entry_s = entry_s[:max_s]
             if len(entry_e) > max_e:
                 entry_e = entry_e[:max_e]
-            predictions_s.append(entry_s)
-            predictions_e.append(entry_e)
+        predictions_s.append(entry_s)
+        predictions_e.append(entry_e)
 
     return predictions_s, predictions_e

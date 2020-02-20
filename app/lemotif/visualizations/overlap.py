@@ -14,9 +14,11 @@ from lemotif.visualizations.utils import fill_color, bg_mask, fill_canvas, apply
 def overlap(topics, emotions, icons, colors, size,
             background=(255, 255, 255), icon_ratio=0.1, size_flux=0.25, rand_alpha=True, passes=10, mask_all=True,
             border_shape=False, border_color=None, inc_floor=0, inc_ceiling=1, text=True, **kwargs):
-    if not set(topics) <= set(icons.keys()):
+    if len(topics) == 0 or len(emotions) == 0:
+        return None
+    elif not set(topics) <= set(icons.keys()):
         return 'Error: Topics outside of presets.'
-    if not set(emotions) <= set(colors.keys()):
+    elif not set(emotions) <= set(colors.keys()):
         return 'Error: Emotions outside of presets.'
     size = (500, 500) # Overriding because smaller values run into issues with sub-shape masking
     base_size = int(min(size) * icon_ratio)

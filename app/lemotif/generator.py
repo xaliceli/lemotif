@@ -53,7 +53,8 @@ def generate_visual(icons, colors, topics, emotions, algorithm, out_dir=None, si
     algorithm = globals()[algorithm]
     all_out = []
     for id, (sub_t, sub_e) in enumerate(zip(topics, emotions)):
-        sub_t = [sub_t[0]]
+        if len(sub_t) > 0:
+            sub_t = [sub_t[0]]
         if len(sub_e) > 4:
             sub_e = sub_e[:4]
         if all_styles is not None:

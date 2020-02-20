@@ -15,9 +15,11 @@ def carpet(topics, emotions, icons, colors, size, background=(255, 255, 255),
            border_shape=True, border_color=None, text=True,
            tile_ratio=.1, line_width=1, rotations=4, rot_degree=45, num_lines=3,
            **kwargs):
-    if not set(topics) <= set(icons.keys()):
+    if len(topics) == 0 or len(emotions) == 0:
+        return None
+    elif not set(topics) <= set(icons.keys()):
         return 'Error: Topics outside of presets.'
-    if not set(emotions) <= set(colors.keys()):
+    elif not set(emotions) <= set(colors.keys()):
         return 'Error: Emotions outside of presets.'
     colors_list = [colors[emotion] for emotion in emotions]
 

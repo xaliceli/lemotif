@@ -31,6 +31,12 @@ def home():
             text_input = request.form.getlist('text' + str(idx + 1))
             all_text.append(text_input)
         subjects_render, emotions_render = parser.predict(all_text)
+        # for i, (s, e) in zip(subjects_render, emotions_render):
+        #     if s[1] >= 0.2 and e[1] >= 0.2:
+        #         subjects_render[i] = [s_keep[0] for s_keep in s if s_keep[1] >= 0.2]
+        #         emotions_render[i] = [e_keep[0] for e_keep in e if e_keep[1] >= 0.2]
+        #     elif
+
         # subject_input = request.form.getlist('subjects' + str(idx+1))
         # emotions_input = request.form.getlist('emotions' + str(idx+1))
         # if len(subject_input[0]) > 0 and len(emotions_input[0]) > 0:
@@ -48,9 +54,11 @@ def home():
                                                emotions=emotions_render,
                                                out_dir=None,
                                                **args)
-
             for motif in motifs:
-                images_encoded.append(utils.img_to_str(motif))
+                if motif is None:
+                    images_encoded.append('')
+                else:
+                    images_encoded.append(utils.img_to_str(motif))
         except:
             error = 'Sorry, there was an error generating motifs for the provided inputs. This demo currently only supports emotions and topics in the dropdown lists. Please try again.'
 

@@ -21,9 +21,11 @@ with session.as_default():
 
 def ae(topics, emotions, icons, colors, size, in_size=16, background=(255, 255, 255), model_dir='',
        border_shape=False, border_color=None, text=True, **kwargs):
-    if not set(topics) <= set(icons.keys()):
+    if len(topics) == 0 or len(emotions) == 0:
+        return None
+    elif not set(topics) <= set(icons.keys()):
         return 'Error: Topics outside of presets.'
-    if not set(emotions) <= set(colors.keys()):
+    elif not set(emotions) <= set(colors.keys()):
         return 'Error: Emotions outside of presets.'
 
     colors_list = [colors[emotion]['rgb'] for emotion in emotions]
