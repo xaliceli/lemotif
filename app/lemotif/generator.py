@@ -14,7 +14,7 @@ from lemotif.colors import colors_dict
 from lemotif.visualizations.utils import rgb_to_hsv
 from lemotif.visualizations.carpet import carpet
 from lemotif.visualizations.circle import circle
-from lemotif.visualizations.overlap import overlap
+from lemotif.visualizations.overlap import overlap as glass
 from lemotif.visualizations.string import string
 from lemotif.visualizations.tiles import tiles
 from lemotif.visualizations.autoencoder import ae as watercolors

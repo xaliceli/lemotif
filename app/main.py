@@ -60,8 +60,10 @@ def home():
                 else:
                     images_encoded.append(utils.img_to_str(motif))
         except:
-            error = 'Sorry, there was an error generating motifs for the provided inputs. This demo currently only supports emotions and topics in the dropdown lists. Please try again.'
+            error = 'Sorry, there was an error generating motifs for the provided inputs. Please try again.'
 
+        print(subjects_render)
+        subjects_render = [['no topic detected'] if x[0] is None else x for x in subjects_render]
         return render_template('index.html',
                                emotions=emotions,
                                subjects=sorted(subjects.keys()),

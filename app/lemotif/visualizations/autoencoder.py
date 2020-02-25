@@ -23,6 +23,8 @@ def ae(topics, emotions, icons, colors, size, in_size=16, background=(255, 255, 
        border_shape=False, border_color=None, text=True, **kwargs):
     if len(topics) == 0 or len(emotions) == 0:
         return None
+    elif topics[0] is None:
+        border_shape = False
     elif not set(topics) <= set(icons.keys()):
         return 'Error: Topics outside of presets.'
     elif not set(emotions) <= set(colors.keys()):

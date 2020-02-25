@@ -12,6 +12,8 @@ def circle(topics, emotions, icons, colors, size, background=(255, 255, 255), mi
            n_circles=100, max_attempts=1000, border_shape=True, border_color=None, border_width=1, text=True, **kwargs):
     if len(topics) == 0 or len(emotions) == 0:
         return None
+    elif topics[0] is None:
+        border_shape = False
     elif not set(topics) <= set(icons.keys()):
         return 'Error: Topics outside of presets.'
     elif not set(emotions) <= set(colors.keys()):
@@ -21,12 +23,17 @@ def circle(topics, emotions, icons, colors, size, background=(255, 255, 255), mi
     canvas = np.zeros((size[0], size[1], 3))
     canvas[..., :] = background
 
-    # Load a boolean mask indicating whether each coordinate is within desired outline shape
-    bool_mask = shape_bool_mask(icons, topics, size, border_color)[..., 0]
-    interior_coords = np.argwhere(bool_mask)
-    min_row, max_row = np.min(interior_coords[:, 0]), np.max(interior_coords[:, 0])
-    min_col, max_col = np.min(interior_coords[:, 1]), np.max(interior_coords[:, 1])
-    canvas[bool_mask] = (245, 245, 245)
+    if topics[0] is None:
+        bool_mask = np.ones((size[0], size[1])).astype(bool)
+        min_row, max_row = 0, size[0]-1
+        min_col, max_col = 0, size[1]-1
+    else:
+        # Load a boolean mask indicating whether each coordinate is within desired outline shape
+        bool_mask = shape_bool_mask(icons, topics, size, border_color)[..., 0]
+        interior_coords = np.argwhere(bool_mask)
+        min_row, max_row = np.min(interior_coords[:, 0]), np.max(interior_coords[:, 0])
+        min_col, max_col = np.min(interior_coords[:, 1]), np.max(interior_coords[:, 1])
+        canvas[bool_mask] = (245, 245, 245)
 
     # Choose a set of random radii and sort by largest first
     min_rad, max_rad = min_rad_factor*size[0], max_rad_factor*size[0]

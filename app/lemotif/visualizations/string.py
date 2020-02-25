@@ -16,6 +16,8 @@ def string(topics, emotions, icons, colors, size, background=(255, 255, 255), n_
            border_shape=True, border_color=None, text=True, **kwargs):
     if len(topics) == 0 or len(emotions) == 0:
         return None
+    elif topics[0] is None:
+        border_shape = False
     elif not set(topics) <= set(icons.keys()):
         return 'Error: Topics outside of presets.'
     elif not set(emotions) <= set(colors.keys()):
@@ -25,21 +27,27 @@ def string(topics, emotions, icons, colors, size, background=(255, 255, 255), n_
     canvas = np.zeros((size[0], size[1], 3))
     canvas[..., :] = background
 
-    # Load a boolean mask indicating outline region
-    bool_mask = shape_bool_mask(icons, topics, size, border_color)[..., 0]
-    canvas[bool_mask] = (245, 245, 245)
-
     # Get coordinates of shape boundaries to start and end curves
-    border = cv2.resize(icons[topics[0]], size) / 255
-    border_points = np.argwhere(~border.astype(bool)).tolist()
+    if border_shape:
+        # Load a boolean mask indicating outline region
+        bool_mask = shape_bool_mask(icons, topics, size, border_color)[..., 0]
+        canvas[bool_mask] = (245, 245, 245)
 
-    # For n number of curves, select arbitrary start and end point on boundary, then two random midpoints
+        border = cv2.resize(icons[topics[0]], size) / 255
+        border_points = np.argwhere(~border.astype(bool)).tolist()
+    else:
+        border_points = np.concatenate((np.column_stack((np.zeros(size[0]), np.array(np.arange(0, size[1])))),
+                                        np.column_stack((np.ones(size[0])*(size[0]-1), np.array(np.arange(0, size[1])))),
+                                        np.column_stack((np.array(np.arange(0, size[0])), np.zeros(size[1]))),
+                                        np.column_stack((np.array(np.arange(0, size[0])), np.ones(size[1])*(size[1]-1)))))
+        border_points = border_points.tolist()
+
+    # For n number of curves, select arbitrary start and end point on boundary, then one random midpoints
     for line in range(n_lines):
         start, end = random.sample(border_points, 1)[0], random.sample(border_points, 1)[0]
         offset = np.random.normal(scale=.2)
-        mid1 = np.array([start[0]*1/3 + end[0]*2/3, start[1]*1/3 + end[1]*2/3])*(1+offset)
-        mid2 = np.array([start[0]*2/3 + end[0]*1/3, start[1]*2/3 + end[1]*1/3])*(1+offset)
-        points = [start, mid1, mid2, end]
+        mid1 = np.array([start[0]/2 + end[0]/2, start[1]/2 + end[1]/2])*(1+offset)
+        points = [start, mid1, end]
 
         nPoints = len(points)
         xPoints = np.array([p[1] for p in points])

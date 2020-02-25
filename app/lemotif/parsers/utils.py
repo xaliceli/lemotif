@@ -533,24 +533,24 @@ def input_fn_builder(features, seq_length, is_training, drop_remainder, num_labe
 
 
 def create_output(predictions, thresh=.2, max_s=1, max_e=4):
-    labels = {'afraid': {'threshold': 0.2, 'type': 'emotion'},
-              'angry': {'threshold': 0.1, 'type': 'emotion'},
-              'anxious': {'threshold': 0.05, 'type': 'emotion'},
-              'ashamed': {'threshold': 0.02, 'type': 'emotion'},
-              'awkward': {'threshold': 0.01, 'type': 'emotion'},
-              'bored': {'threshold': 0.02, 'type': 'emotion'},
-              'calm': {'threshold': 0.23, 'type': 'emotion'},
-              'confused': {'threshold': 0.01, 'type': 'emotion'},
-              'disgusted': {'threshold': 0.02, 'type': 'emotion'},
-              'excited': {'threshold': 0.04, 'type': 'emotion'},
-              'frustrated': {'threshold': 0.03, 'type': 'emotion'},
-              'happy': {'threshold': 0.69, 'type': 'emotion'},
-              'jealous': {'threshold': 0.01, 'type': 'emotion'},
-              'nostalgic': {'threshold': 0.03, 'type': 'emotion'},
-              'proud': {'threshold': 0.06, 'type': 'emotion'},
-              'sad': {'threshold': 0.02, 'type': 'emotion'},
-              'satisfied': {'threshold': 0.13, 'type': 'emotion'},
-              'surprised': {'threshold': 0.02, 'type': 'emotion'},
+    labels = {'afraid': {'threshold': 0.2, 'type': 'emotion', 'valence': 'negative'},
+              'angry': {'threshold': 0.1, 'type': 'emotion', 'valence': 'negative'},
+              'anxious': {'threshold': 0.05, 'type': 'emotion', 'valence': 'negative'},
+              'ashamed': {'threshold': 0.02, 'type': 'emotion', 'valence': 'negative'},
+              'awkward': {'threshold': 0.01, 'type': 'emotion', 'valence': 'neutral'},
+              'bored': {'threshold': 0.02, 'type': 'emotion', 'valence': 'neutral'},
+              'calm': {'threshold': 0.23, 'type': 'emotion', 'valence': 'neutral'},
+              'confused': {'threshold': 0.01, 'type': 'emotion', 'valence': 'neutral'},
+              'disgusted': {'threshold': 0.02, 'type': 'emotion', 'valence': 'negative'},
+              'excited': {'threshold': 0.04, 'type': 'emotion', 'valence': 'positive'},
+              'frustrated': {'threshold': 0.03, 'type': 'emotion', 'valence': 'negative'},
+              'happy': {'threshold': 0.69, 'type': 'emotion', 'valence': 'positive'},
+              'jealous': {'threshold': 0.01, 'type': 'emotion', 'valence': 'negative'},
+              'nostalgic': {'threshold': 0.03, 'type': 'emotion', 'valence': 'neutral'},
+              'proud': {'threshold': 0.06, 'type': 'emotion', 'valence': 'positive'},
+              'sad': {'threshold': 0.02, 'type': 'emotion', 'valence': 'negative'},
+              'satisfied': {'threshold': 0.13, 'type': 'emotion', 'valence': 'positive'},
+              'surprised': {'threshold': 0.02, 'type': 'emotion', 'valence': 'neutral'},
               'exercise': {'threshold': 0.09, 'type': 'subject'},
               'family': {'threshold': 0.12, 'type': 'subject'},
               'food': {'threshold': 0.07, 'type': 'subject'},
@@ -565,21 +565,37 @@ def create_output(predictions, thresh=.2, max_s=1, max_e=4):
     predictions_s, predictions_e = [], []
     for i, prediction in enumerate(predictions):
         entry_s, entry_e = [], []
+        valences = {'positive': 0, 'negative': 0, 'neutral': 0}
         for j, pred in enumerate(prediction['probabilities']):
             label = list(labels.keys())[j]
             threshold = labels[label]['threshold'] if thresh == 'auto' else thresh
+            if labels[label]['type'] == 'emotion':
+                valences[labels[label]['valence']] += pred
             if pred >= threshold:
                 if labels[label]['type'] == 'subject':
                     entry_s.append((label, pred))
                 else:
                     entry_e.append((label, pred))
-        if len(entry_s) > 0 and len(entry_e) > 0:
+
+        if len(entry_s) == 0:
+            entry_s = [None]
+        else:
             entry_s = [x[0] for x in sorted(entry_s, key = lambda x: x[1], reverse=True)]
-            entry_e = [x[0] for x in sorted(entry_e, key = lambda x: x[1], reverse=True)]
             if len(entry_s) > max_s:
                 entry_s = entry_s[:max_s]
+
+        if len(entry_e) == 0:
+            if valences['positive'] > valences['negative'] and valences['positive'] > valences['neutral']:
+                entry_e = ['positive']
+            elif valences['negative'] > valences['positive'] and valences['negative'] > valences['neutral']:
+                entry_e = ['negative']
+            else:
+                entry_e = ['neutral']
+        else:
+            entry_e = [x[0] for x in sorted(entry_e, key = lambda x: x[1], reverse=True)]
             if len(entry_e) > max_e:
                 entry_e = entry_e[:max_e]
+
         predictions_s.append(entry_s)
         predictions_e.append(entry_e)
 

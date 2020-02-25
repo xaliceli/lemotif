@@ -17,6 +17,8 @@ def carpet(topics, emotions, icons, colors, size, background=(255, 255, 255),
            **kwargs):
     if len(topics) == 0 or len(emotions) == 0:
         return None
+    elif topics[0] is None:
+        border_shape = False
     elif not set(topics) <= set(icons.keys()):
         return 'Error: Topics outside of presets.'
     elif not set(emotions) <= set(colors.keys()):

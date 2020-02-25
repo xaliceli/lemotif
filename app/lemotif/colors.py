@@ -20,4 +20,7 @@ colors_dict = {'afraid': {'color': 'black', 'rgb': (0, 0, 0), 'lab': [0, 128, 12
                'proud': {'color': 'red', 'rgb': (230, 25, 75), 'lab': [126, 201, 156]},
                'sad': {'color': 'navy', 'rgb': (0, 0, 117), 'lab': [28, 173, 67]},
                'satisfied': {'color': 'lavender', 'rgb': (230, 190, 255), 'lab': [210, 154, 101]},
-               'surprised': {'color': 'orange', 'rgb': (245, 130, 49), 'lab': [169, 167, 188]}}
+               'surprised': {'color': 'orange', 'rgb': (245, 130, 49), 'lab': [169, 167, 188]},
+               'positive': {'rgb': (31, 206, 109)},
+               'negative': {'rgb': (194, 56, 36)},
+               'neutral': {'rgb': (242, 197, 0)}}

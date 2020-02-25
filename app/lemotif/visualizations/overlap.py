@@ -16,13 +16,25 @@ def overlap(topics, emotions, icons, colors, size,
             border_shape=False, border_color=None, inc_floor=0, inc_ceiling=1, text=True, **kwargs):
     if len(topics) == 0 or len(emotions) == 0:
         return None
+    elif topics[0] is None:
+        border_shape = False
     elif not set(topics) <= set(icons.keys()):
         return 'Error: Topics outside of presets.'
     elif not set(emotions) <= set(colors.keys()):
         return 'Error: Emotions outside of presets.'
     size = (500, 500) # Overriding because smaller values run into issues with sub-shape masking
     base_size = int(min(size) * icon_ratio)
-    icons_resized = [cv2.resize(icons[topic], (base_size, base_size)) for topic in topics]
+    if topics[0] is None:
+        icons_resized = np.ones((base_size, base_size)) * 255
+        border_points = np.concatenate(
+            (np.column_stack((np.zeros(base_size), np.array(np.arange(0, base_size)))),
+             np.column_stack((np.ones(base_size)*(base_size-1), np.array(np.arange(0, base_size)))),
+             np.column_stack((np.array(np.arange(0, base_size)), np.zeros(base_size))),
+             np.column_stack((np.array(np.arange(0, base_size)), np.ones(base_size)*(base_size-1))))).astype(int)
+        icons_resized[border_points[:, 0], border_points[:, 1]] = 0
+        icons_resized = [icons_resized]
+    else:
+        icons_resized = [cv2.resize(icons[topic], (base_size, base_size)) for topic in topics]
     colors_list = [colors[emotion] for emotion in emotions]
     color_icons = [fill_color(icon, color['rgb'], border_color) for icon, color in product(icons_resized, colors_list)]
 
