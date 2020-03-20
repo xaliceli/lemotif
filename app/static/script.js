@@ -6,6 +6,30 @@ function expand(element) {
         x.style.display = "none";
     }
 }
+function expand_and_hide(element) {
+    var x = document.getElementById(element);
+    if (x.style.display === "none" || x.style.display === "") {
+        x.style.display = "inline-block";
+    } else {
+        x.style.display = "none";
+    }
+    var settings = ['settings-carpet', 'settings-circle', 'settings-glass',
+        'settings-tile', 'settings-string', 'settings-watercolors'];
+    settings = settings.filter(s => s !== element);
+    for (var i = 0; i < settings.length; i++) {
+        document.getElementById(settings[i]).style.display = "none";
+    }
+
+}
+
+$('#download').click(function(){
+     $(this).parent().attr('href', document.getElementById('canvas').toDataURL());
+     $(this).parent().attr('download', "myPicture.png");
+});
+
+html2canvas($('#motifs').get(0)).then(function(canvas) {
+    var lemotif = canvas.toDataURL("image/png");
+});
 
 $(function () {
     var emotions = Object.keys(emotionsDict);
@@ -26,15 +50,15 @@ $(function () {
             .autocomplete({
                 source: subjects,
                 minLength: 0,
-                change: function(event,ui){
+                change: function (event, ui) {
                     if (!ui.item) {
                         $(this).val('');
                         $(this).attr("placeholder", 'Invalid input, please try again.');
                     }
                 }
             })
-            .click(function(){
-                $(this).autocomplete( "search", "" );
+            .click(function () {
+                $(this).autocomplete("search", "");
             })
             .autocomplete("instance")._renderItem = function (ul, item) {
             return $("<li>")
@@ -71,15 +95,15 @@ $(function () {
                     this.value = terms.join(", ");
                     return false;
                 },
-                change: function(event,ui){
+                change: function (event, ui) {
                     if (!ui.item) {
                         $(this).val('');
                         $(this).attr("placeholder", 'Invalid input, please try again.');
                     }
                 }
             })
-            .click(function(){
-                $(this).autocomplete( "search", "" );
+            .click(function () {
+                $(this).autocomplete("search", "");
             })
             .autocomplete("instance")._renderItem = function (ul, item) {
             return $("<li>")

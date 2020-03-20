@@ -13,7 +13,7 @@ from lemotif.visualizations.utils import apply_shape, add_labels
 
 def tiles(topics, emotions, icons, colors, size, background=(255, 255, 255),
           border_shape=True, border_color=None, text=True,
-          line_width=1, step=10, dir_prob=0.5, **kwargs):
+          line_width_tile=1, step_size=10, dir_prob=0.5, **kwargs):
     if len(topics) == 0 or len(emotions) == 0:
         return None
     elif topics[0] is None:
@@ -26,12 +26,12 @@ def tiles(topics, emotions, icons, colors, size, background=(255, 255, 255),
 
     # Draw lines
     canvas = np.ones((size[0], size[1], 3))
-    for i in range(0, size[0], step):
-        for j in range(0, size[1], step):
+    for i in range(0, size[0], step_size):
+        for j in range(0, size[1], step_size):
             if random.uniform(0, 1) > dir_prob:
-                cv2.line(canvas, (j, i), (j+step, i+step), (0, 0, 0), line_width)
+                cv2.line(canvas, (j, i), (j+step_size, i+step_size), (0, 0, 0), line_width_tile)
             else:
-                cv2.line(canvas, (j, i+step), (j+step, i), (0, 0, 0), line_width)
+                cv2.line(canvas, (j, i+step_size), (j+step_size, i), (0, 0, 0), line_width_tile)
     canvas = np.uint8(canvas[..., 0])
 
     # Find connected components

@@ -20,7 +20,7 @@ with session.as_default():
         dec_model._make_predict_function()
 
 def ae(topics, emotions, icons, colors, size, in_size=16, background=(255, 255, 255), model_dir='',
-       border_shape=False, border_color=None, text=True, **kwargs):
+       border_shape=False, border_color=None, text=True, intensity_sd=.2, **kwargs):
     if len(topics) == 0 or len(emotions) == 0:
         return None
     elif topics[0] is None:
@@ -37,7 +37,7 @@ def ae(topics, emotions, icons, colors, size, in_size=16, background=(255, 255, 
     coords_split = np.array_split(coords, len(colors_list))
     for idx, c in enumerate(colors_list):
         canvas[coords_split[idx][:, 0], coords_split[idx][:, 1]] = c[::-1]
-        canvas[coords_split[idx][:, 0], coords_split[idx][:, 1]] *= np.random.normal(loc=1, scale=.2, size=(
+        canvas[coords_split[idx][:, 0], coords_split[idx][:, 1]] *= np.random.normal(loc=1, scale=intensity_sd, size=(
             canvas[coords_split[idx][:, 0], coords_split[idx][:, 1]].shape))
 
     img_proc = np.asarray(canvas, dtype='float32')[None, ...]

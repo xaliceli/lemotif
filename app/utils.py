@@ -18,20 +18,39 @@ def set_args():
     args['size'] = (256, 256)
     # Canvas background in BGR format
     args['background'] = (255, 255, 255)
-    # Base size of icon relative to canvas size
+
+    # CARPET ARGS
+    args['tile_ratio'] = 0.1
+    args['line_width'] = 1
+    args['rot_degree'] = 45
+
+    # CIRCLE ARGS
+    args['n_circles'] = 100
+    args['min_rad_factor'] = 0.01
+    args['max_rad_factor'] = 0.09
+
+    # GLASS ARGS
     args['icon_ratio'] = 0.1
-    # Standard deviation of a normal distribution centered at 1 from which icon resizing factors are sampled
     args['size_flux'] = 0.33
-    # Number of times the canvas is iterated over; smaller numbers retain appearance of shapes, larger numbers appear more painterly
     args['passes'] = 10
-    # Minimum incremental distance as factor of icon size before new shape can be placed. Lower results in more overlap.
     args['inc_floor'] = 0.5
-    # Maximum incremental distance as factor of icon size before new shape can be placed. Lower results in more overlap.
     args['inc_ceiling'] = 0.75
-    # If True, each icon is alpha-blended into the existing canvas at a random opacity
     args['rand_alpha'] = True
-    # If True, entire shapes are alpha-blended, otherwise blends only overlap regions
     args['mask_all'] = True
+
+    # TILE ARGS
+    args['line_width_tile'] = 1
+    args['dir_prob'] = .5
+    args['step_size'] = 10
+
+    # STRING ARGS
+    args['n_lines'] = 150
+    args['line_width_string'] = 5
+    args['offset_sd'] = .2
+
+    # WATERCOLORS ARGS
+    args['intensity_sd'] = .2
+
     # If True, randomly select topic for border shape as opposed to using square.
     args['border_shape'] = True
     # Scalar representing the relative brightness value of borders
@@ -55,6 +74,7 @@ def set_args():
 
 def get_args():
     args, values = set_args()
+    int_params = ['rot_degree', 'line_width', 'line_width_tile', 'n_circles', 'passes', 'step_size', 'n_lines', 'line_width_string']
 
     for param in args.keys():
         results = request.form.getlist(param)
@@ -63,7 +83,7 @@ def get_args():
             if type(args[param]) is bool:
                 val = val == 'True'
             elif type(args[param]) is not str:
-                val = float(val) / 100 if float(val) >= 1 >= args[param] and param != 'passes' else int(val)
+                val = float(val) / 100 if float(val) >= 1 >= args[param] and param not in int_params else int(val)
             args[param] = val
 
     for value in values.keys():

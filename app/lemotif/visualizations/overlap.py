@@ -13,7 +13,7 @@ from lemotif.visualizations.utils import fill_color, bg_mask, fill_canvas, apply
 
 def overlap(topics, emotions, icons, colors, size,
             background=(255, 255, 255), icon_ratio=0.1, size_flux=0.25, rand_alpha=True, passes=10, mask_all=True,
-            border_shape=False, border_color=None, inc_floor=0, inc_ceiling=1, text=True, **kwargs):
+            border_shape=False, border_color=None, inc_floor=.5, inc_ceiling=.75, text=True, **kwargs):
     if len(topics) == 0 or len(emotions) == 0:
         return None
     elif topics[0] is None:

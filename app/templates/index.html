@@ -25,203 +25,251 @@
 <body>
 <main>
     <div class="container">
-        {% if demo %}
-        <div id='input' class='demo'>
+        <div id='input'>
             <h1>Lemotif: An Affective Visual Journal</h1>
-            <form method='post' id="inputs" action="{{ url_for('demo')}}">
+            <form method='post' id="inputs" action="{{ url_for('home')}}">
+                {% for n in range(n_inputs) %}
+                {% if n == 0 %}
+                <h3>What was the most salient part of your day? How did it make you feel?</h3>
                 {% else %}
-                <div id='input'>
-                    <h1>Lemotif: An Affective Visual Journal</h1>
-                    <form method='post' id="inputs" action="{{ url_for('home')}}">
-                        {% endif %}
-                        {% for n in range(n_inputs) %}
-                        {% if n == 0 %}
-                        <h3>What was the most salient part of your day? How did it make you feel?</h3>
-                        {% else %}
-                        <h3>What was another salient part of your day? How did it make you feel?</h3>
-                        {% endif %}
-                        <textarea id={{'text' ~ (loop.index0 + 1)}} name={{'text' ~ (loop.index0 + 1)}}
-                                  placeholder='Write a little about something that happened today and how you felt.'>{{values['text' ~ (loop.index0 + 1)]}}</textarea>
-                        {% endfor %}
-                        <br><br>
-                        <input type="submit" value=">> Generate Motifs" form="inputs"
-                               onclick="document.getElementById('vis').innerHTML = 'Please wait, generating...';">
-                        {% if demo %}
-                        <div class="instructions">
-                        {% if completion_code %}
-                            <p>Thank you for participating in our study! Please review the images to the right and note
-                                the number of the version you like best. You may need to scroll down to see all six
-                                styles. You will be asked for your favorite style later in this study.</p>
-                            <p>After reviewing all images and choosing the style you like best, please return to your
-                                AMT session and enter the following completion code: <strong>{{ completion_code }}</strong>
-                            </p>
-                            <p>You may now exit out of this window.</p>
-                        {% else %}
-                            <p>Welcome to our study. Please write a little bit about your day today (or yesterday)
-                                in the boxes above. What were the most important things that happened and how did
-                                they make you feel?
-                            </p>
-                            <p>Once you are done writing, click on the "Generate Motifs" button to see some visual
-                                representations of your day. It may take a few seconds for the images to appear.</p>
-                            <p>No user data is saved in this demo.</p>
-                        {% endif %}
-                        </div>
-                        {% else %}
-                        <div class="slider-container">
-                            <h3>Lemotif Style</h3>
-                            <p>Choose a visualization style below to customize your motif.
-                                You can hover over each style's name for a preview of what it looks like.</p>
-                                {% for algorithm in ['carpet', 'circle', 'glass', 'tiles', 'string', 'watercolors'] %}
-                                {% if settings['algorithm'] == algorithm %}
-                                {% set check = 'checked' %}
-                                {% else %}
-                                {% set check = '' %}
-                                {% endif %}
-                                    <div class="tooltip">
-                                        <input type="radio" id="algo_{{algorithm}}" name="algorithm" value="{{algorithm}}"
-                                       {{check}}>
-                                        <label for="algo_{{algorithm}}">{{algorithm | capitalize}}</label>
-                                        <div class="tooltip-hover">
-                                            <img src="static/images/preview/{{algorithm}}.png">
-                                        </div>
-                                    </div>
-                                {% endfor %}
-                        </div>
-                        {# <h3 onclick="expand('settings')" class="toggle">Settings &#9662;</h3>
-                        <div id="settings">
-                            <div class="slider-container">
-                                Lemotif Style<br>
-                                {% for algorithm in ['carpet', 'circle', 'glass', 'tiles', 'string', 'watercolors'] %}
-                                {% if settings['algorithm'] == algorithm %}
-                                {% set check = 'checked' %}
-                                {% else %}
-                                {% set check = '' %}
-                                {% endif %}
-                                <input type="radio" id="algo_{{algorithm}}" name="algorithm" value="{{algorithm}}"
-                                       {{check}}>
-                                <label for="algo_{{algorithm}}">{{algorithm | capitalize}}</label>
-                                {% endfor %}
-                            </div>
-                            <div class="slider-container">
-                                <label for="icon_ratio">Icon Size: Percent of Canvas Size</label><br>
-                                <input type="range" min="1" max="50" value={{(settings['icon_ratio']*100)|int}}
-                                       class="slider" id="icon_ratio" name="icon_ratio"
-                                       oninput="icon_ratio_out.value = icon_ratio.value + '%'">
-                                <output name="icon_ratio_out" id="icon_ratio_out">
-                                    {{(settings['icon_ratio']*100)|int}}%
-                                </output>
-                            </div>
-                            <div class="slider-container">
-                                <label for="size_flux">Icon Size Flux: Standard Deviation of Icon Resizing
-                                    Factor</label><br>
-                                <input type="range" min="0" max="100" value={{(settings['size_flux']*100)|int}}
-                                       class="slider" id="size_flux" name="size_flux"
-                                       oninput="size_flux_out.value = size_flux.value/100">
-                                <output name="size_flux_out" id="size_flux_out">{{settings['size_flux']}}</output>
-                            </div>
-                            <div class="slider-container">
-                                <label for="passes">Fill Density: Number of Passes Through Canvas</label><br>
-                                <input type="range" min="1" max="20" value={{(settings['passes'])|int}}
-                                       class="slider" id="passes" name="passes"
-                                       oninput="passes_out.value = passes.value">
-                                <output name="passes_out" id="passes_out">{{(settings['passes'])|int}}</output>
-                            </div>
-                            <div class="slider-container">
-                                <label for="inc_floor">Min Icon Distance: Percent of Icon Size</label><br>
-                                <input type="range" min="1" max="100" value={{(settings['inc_floor']*100)|int}}
-                                       class="slider" id="inc_floor" name="inc_floor"
-                                       oninput="inc_floor_out.value = inc_floor.value + '%'">
-                                <output name="inc_floor_out" id="inc_floor_out">{{(settings['inc_floor']*100)|int}}%
-                                </output>
-                            </div>
-                            <div class="slider-container">
-                                <label for="inc_ceiling">Max Icon Distance: Percent of Icon Size</label><br>
-                                <input type="range" min="1" max="100" value={{(settings['inc_ceiling']*100)|int}}
-                                       class="slider" id="inc_ceiling" name="inc_ceiling"
-                                       oninput="inc_ceiling_out.value = inc_ceiling.value + '%'">
-                                <output name="inc_ceiling_out" id="inc_ceiling_out">
-                                    {{(settings['inc_ceiling']*100)|int}}%
-                                </output>
-                            </div>
-                            <div class="slider-container">
-                                <label for="border_color">Border Color: Relative Intensity</label>
-                                <input type="range" min="1" max="100" value={{(settings['border_color']*100)|int}}
-                                       class="slider" id="border_color" name="border_color"
-                                       oninput="border_color_out.value = border_color.value + '%'">
-                                <output name="border_color_out" id="border_color_out">
-                                    {{(settings['border_color']*100)|int}}%
-                                </output>
-                            </div>
-                        </div>
+                <h3>What was another salient part of your day? How did it make you feel?</h3>
+                {% endif %}
+                <textarea id={{'text' ~ (loop.index0 + 1)}} name={{'text' ~ (loop.index0 + 1)}}
+                          placeholder='Write a little about something that happened today and how you felt.'>{{values['text' ~ (loop.index0 + 1)]}}</textarea>
+                {% endfor %}
+                <br><br>
+                <input type="submit" value=">> Generate Motifs" form="inputs"
+                       onclick="document.getElementById('vis').innerHTML = 'Please wait, generating...';">
 
-                        <h3 onclick="expand('about')" class="toggle">About &#9662;</h3>
-                        <div id="about">
-
-                            <h3>About</h3><p>
-                            Lemotif is a project by <a href="mailto:xaliceli@gmail.com">Alice Li</a> &
-                            <a href="mailto:deviparikh@gmail.com">Devi Parikh</a> building upon the ideas laid out in
-                            <a href="https://arxiv.org/pdf/1903.07766.pdf">this paper</a>.
-                            Our goal is to develop a fun, intuitive journalling tool helping users understand patterns
-                            in
-                            their emotional states and associated sources over time, thereby supporting emotional
-                            well-being,
-                            self-reflection, and opportunities for action.
-                            (<a href="http://github.com/xaliceli/lemotif">Source Code</a>)
-                        </p> #}
-                            <p>No user data is stored in this demo.</p>
-                        {#</div>#}
-                        {% endif %}
-                    </form>
-                </div>
-                <div id='vis'>
-                    {% if error %}
-                    {{ error }}
+                <div class="slider-container">
+                    <h3>Lemotif Style</h3>
+                    <p>Choose a visualization style below to customize your motifs.
+                        You can hover over each style's name for a preview of what it looks like.
+                        You can also customize your chosen style under the Settings menu below.</p>
+                    {% for algorithm in ['carpet', 'circle', 'glass', 'tile', 'string', 'watercolors'] %}
+                    {% if settings['algorithm'] == algorithm %}
+                    {% set check = 'checked' %}
+                    {% else %}
+                    {% set check = '' %}
                     {% endif %}
-                    {% if images %}
-                    {% if demo %}
-                    <div id='motifs' class='demo'>
-                        {% for style in ['Style 1', 'Style 2', 'Style 3', 'Style 4', 'Style 5', 'Style 6'] %}
-                        {% set style_loop = loop %}
-                        <h3><strong>{{ style }}</strong></h3>
-                        {% for s in subj_labels %}
-                        <div class="image-wrapper">
-                            <img src='{{images[style_loop.index0 + (6 * loop.index0)]}}'><br>
-                            <div class="image-label">
-                                {{ s[0] }}
-                                {% for emot in emot_labels[loop.index0] %}
-                                <span style="background-color: hsl({{emotions[emot]['hsv'][0]}}, {{emotions[emot]['hsv'][1]}}%, 85%);
-                                 color: hsl({{emotions[emot]['hsv'][0]}}, {{emotions[emot]['hsv'][1]}}%, 15%);
-                                 padding: .1rem; margin: 0 .1rem;"> {{ emot }} </span>
-                                {% endfor %}
-                            </div>
+                    <div class="tooltip">
+                        <input type="radio" id="algo_{{algorithm}}" name="algorithm" value="{{algorithm}}"
+                               {{check}} onclick="expand_and_hide('settings-{{algorithm}}')">
+                        <label for="algo_{{algorithm}}">{{algorithm | capitalize}}</label>
+                        <div class="tooltip-hover">
+                            <img src="static/images/preview/{{algorithm}}.png">
                         </div>
-                        {% endfor %}
-                        {% endfor %}
-                        {% else %}
-                        <div id='motifs'>
-                            {% for image in images %}
-                            <div class="image-wrapper">
-                                {% if image|length == 0 %}
-                                No distinct topics or emotions were detected for this entry.
-                                {% else %}
-                                <img src='{{image}}'><br>
-                                <div class="image-label">
-                                    {{ subj_labels[loop.index0][0]}}:
-                                    {# {% set emotions_list = values['emotions' ~ (loop.index0)].split(', ') %} #}
-                                    {% for emot in emot_labels[loop.index0] %}
-                                    <span style="background-color: hsl({{emotions[emot]['hsv'][0]}}, {{emotions[emot]['hsv'][1]}}%, 85%);
-                                    color: hsl({{emotions[emot]['hsv'][0]}}, {{emotions[emot]['hsv'][1]}}%, 15%);
-                                    padding: .1rem; margin: 0 .1rem;"> {{ emot }} </span>
-                                    {% endfor %}
-                                </div>
-                                {% endif %}
-                            </div>
-                            {% endfor %}
-                            {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+                <h3 onclick="expand('settings')" class="toggle">Settings &#9662;</h3>
+                <div id="settings">
+                    {% if settings['algorithm'] == 'carpet' %}
+                    {% set carpet_display = 'inline-block' %}
+                    {% else %}
+                    {% set carpet_display = 'none' %}
+                    {% endif %}
+                    <div id="settings-carpet" class="vis-settings" style="display: {{carpet_display}};">
+                        <div class="slider-container">
+                            <label for="tile_ratio">Grid size as percentage of motif size</label><br>
+                            <input type="range" min="10" max="50" value={{(settings['tile_ratio']*100)|int}}
+                                   class="slider" id="tile_ratio" name="tile_ratio"
+                                   oninput="tile_ratio_out.value = tile_ratio.value + '%'">
+                            <output name="tile_ratio_out" id="tile_ratio_out">{{settings['tile_ratio']*100|int}}%</output>
                         </div>
-                        {% endif %}
+                        <div class="slider-container">
+                            <label for="rot_degree">Line angle intervals</label><br>
+                            <input type="range" min="20" max="90" value={{(settings['rot_degree'])|int}}
+                                   class="slider" id="rot_degree" name="rot_degree"
+                                   oninput="rot_degree_out.value = rot_degree.value">
+                            <output name="rot_degree_out" id="rot_degree_out">{{settings['rot_degree']}}</output>
+                        </div>
+                        <div class="slider-container">
+                            <label for="line_width">Line widths</label><br>
+                            <input type="range" min="1" max="10" value={{(settings['line_width'])|int}}
+                                   class="slider" id="line_width" name="line_width"
+                                   oninput="line_width_out.value = line_width.value">
+                            <output name="line_width_out" id="line_width_out">{{settings['line_width']}}</output>
+                        </div>
+                    </div>
+                    {% if settings['algorithm'] == 'circle' %}
+                    {% set circle_display = 'inline-block' %}
+                    {% else %}
+                    {% set circle_display = 'none' %}
+                    {% endif %}
+                    <div id="settings-circle" class="vis-settings" style="display: {{circle_display}};">
+                        <div class="slider-container">
+                            <label for="n_circles">Number of circles</label><br>
+                            <input type="range" min="10" max="500" value={{(settings['n_circles'])|int}}
+                                   class="slider" id="n_circles" name="n_circles"
+                                   oninput="n_circles_out.value = n_circles.value">
+                            <output name="n_circles_out" id="n_circles_out">{{settings['n_circles']}}</output>
+                        </div>
+                        <div class="slider-container">
+                            <label for="min_rad_factor">Min circle radius as percentage of motif size</label><br>
+                            <input type="range" min="1" max="50" value={{(settings['min_rad_factor']*100)|int}}
+                                   class="slider" id="min_rad_factor" name="min_rad_factor"
+                                   oninput="min_rad_factor_out.value = min_rad_factor.value + '%'">
+                            <output name="min_rad_factor_out" id="min_rad_factor_out">
+                                {{settings['min_rad_factor']*100|int}}%</output>
+                        </div>
+                        <div class="slider-container">
+                            <label for="max_rad_factor">Max circle radius as percentage of motif size</label><br>
+                            <input type="range" min="1" max="50" value={{(settings['max_rad_factor']*100)|int}}
+                                   class="slider" id="max_rad_factor" name="max_rad_factor"
+                                   oninput="max_rad_factor_out.value = max_rad_factor.value + '%'">
+                            <output name="max_rad_factor_out" id="max_rad_factor_out">
+                                {{settings['max_rad_factor']*100|int}}%</output>
+                        </div>
+                    </div>
+                    {% if settings['algorithm'] == 'glass' %}
+                    {% set glass_display = 'inline-block' %}
+                    {% else %}
+                    {% set glass_display = 'none' %}
+                    {% endif %}
+                    <div id="settings-glass" class="vis-settings" style="display: {{glass_display}};">
+                        <div class="slider-container">
+                            <label for="icon_ratio">Icon size as percentage of motif size</label><br>
+                            <input type="range" min="1" max="50" value={{(settings['icon_ratio']*100)|int}}
+                                   class="slider" id="icon_ratio" name="icon_ratio"
+                                   oninput="icon_ratio_out.value = icon_ratio.value + '%'">
+                            <output name="icon_ratio_out" id="icon_ratio_out">
+                                {{(settings['icon_ratio']*100)|int}}%
+                            </output>
+                        </div>
+                        <div class="slider-container">
+                            <label for="size_flux">Icon size variability</label><br>
+                            <input type="range" min="0" max="100" value={{(settings['size_flux']*100)|int}}
+                                   class="slider" id="size_flux" name="size_flux"
+                                   oninput="size_flux_out.value = size_flux.value/100">
+                            <output name="size_flux_out" id="size_flux_out">{{settings['size_flux']}}</output>
+                        </div>
+                        <div class="slider-container">
+                            <label for="passes">Icon fill density</label><br>
+                            <input type="range" min="1" max="20" value={{(settings['passes'])|int}}
+                                   class="slider" id="passes" name="passes"
+                                   oninput="passes_out.value = passes.value">
+                            <output name="passes_out" id="passes_out">{{(settings['passes'])|int}}</output>
+                        </div>
+                    </div>
+                    {% if settings['algorithm'] == 'tile' %}
+                    {% set tile_display = 'inline-block' %}
+                    {% else %}
+                    {% set tile_display = 'none' %}
+                    {% endif %}
+                    <div id="settings-tile" class="vis-settings" style="display: {{tile_display}};">
+                        <div class="slider-container">
+                            <label for="dir_prob">Angle rotation</label><br>
+                            <input type="range" min="10" max="90" value={{(settings['dir_prob']*100)|int}}
+                                   class="slider" id="dir_prob" name="dir_prob"
+                                   oninput="dir_prob_out.value = dir_prob.value + '%'">
+                            <output name="dir_prob_out" id="dir_prob_out">{{settings['dir_prob']*100|int}}%</output>
+                        </div>
+                        <div class="slider-container">
+                            <label for="step_size">Grid size</label><br>
+                            <input type="range" min="5" max="50" value={{(settings['step_size'])|int}}
+                                   class="slider" id="step_size" name="step_size"
+                                   oninput="step_size_out.value = step_size.value">
+                            <output name="step_size_out" id="step_size_out">{{settings['step_size']}}</output>
+                        </div>
+                        <div class="slider-container">
+                            <label for="line_width_tile">Line widths</label><br>
+                            <input type="range" min="1" max="10" value={{(settings['line_width_tile'])|int}}
+                                   class="slider" id="line_width_tile" name="line_width_tile"
+                                   oninput="line_width_tile_out.value = line_width_tile.value">
+                            <output name="line_width_tile_out" id="line_width_tile_out">{{settings['line_width_tile']}}</output>
+                        </div>
+                    </div>
+                    {% if settings['algorithm'] == 'string' %}
+                    {% set string_display = 'inline-block' %}
+                    {% else %}
+                    {% set string_display = 'none' %}
+                    {% endif %}
+                    <div id="settings-string" class="vis-settings" style="display: {{string_display}};">
+                        <div class="slider-container">
+                            <label for="offset_sd">Amount of bend in string</label><br>
+                            <input type="range" min="10" max="90" value={{(settings['offset_sd']*100|int)}}
+                                   class="slider" id="offset_sd" name="offset_sd"
+                                   oninput="offset_sd_out.value = offset_sd.value/100">
+                            <output name="offset_sd_out" id="offset_sd_out">{{settings['offset_sd']}}</output>
+                        </div>
+                        <div class="slider-container">
+                            <label for="n_lines">Number of strings</label><br>
+                            <input type="range" min="25" max="250" value={{(settings['n_lines'])|int}}
+                                   class="slider" id="n_lines" name="n_lines"
+                                   oninput="n_lines_out.value = n_lines.value">
+                            <output name="n_lines_out" id="n_lines_out">{{settings['n_lines']}}</output>
+                        </div>
+                        <div class="slider-container">
+                            <label for="line_width_string">String widths</label><br>
+                            <input type="range" min="1" max="10" value={{(settings['line_width_string'])|int}}
+                                   class="slider" id="line_width_string" name="line_width_string"
+                                   oninput="line_width_string_out.value = line_width_string.value">
+                            <output name="line_width_string_out" id="line_width_string_out">
+                                {{settings['line_width_string']}}</output>
+                        </div>
+                    </div>
+                    {% if settings['algorithm'] == 'watercolors' %}
+                    {% set watercolors_display = 'inline-block' %}
+                    {% else %}
+                    {% set watercolors_display = 'none' %}
+                    {% endif %}
+                    <div id="settings-watercolors" class="vis-settings" style="display: {{watercolors_display}};">
+                        <div class="slider-container">
+                            <label for="intensity_sd">Variation in color intensity</label><br>
+                            <input type="range" min="0" max="100" value={{(settings['intensity_sd']*100|int)}}
+                                   class="slider" id="intensity_sd" name="intensity_sd"
+                                   oninput="intensity_sd_out.value = intensity_sd.value/100">
+                            <output name="intensity_sd_out" id="intensity_sd_out">{{settings['intensity_sd']}}</output>
+                        </div>
                     </div>
                 </div>
+
+                <h3 onclick="expand('about')" class="toggle">About &#9662;</h3>
+                <div id="about">
+                    <p>
+                        Lemotif is a project by <a href="mailto:xaliceli@gmail.com">Alice Li</a> &
+                        <a href="mailto:deviparikh@gmail.com">Devi Parikh</a> building upon the ideas laid out in
+                        <a href="https://arxiv.org/pdf/1903.07766.pdf">this paper</a>.
+                        Our goal is to develop a fun, intuitive journalling tool helping users understand patterns
+                        in
+                        their emotional states and associated sources over time, thereby supporting emotional
+                        well-being,
+                        self-reflection, and opportunities for action.
+                        (<a href="http://github.com/xaliceli/lemotif">Source Code</a>)
+                    </p>
+                    <p>No user data is stored in this demo.</p>
+                </div>
+            </form>
+        </div>
+        <div id='vis'>
+            {% if error %}
+            {{ error }}
+            {% endif %}
+            {% if images %}
+            <div id='motifs'>
+                {% for image in images %}
+                <div class="image-wrapper">
+                    {% if image|length == 0 %}
+                    No distinct topics or emotions were detected for this entry.
+                    {% else %}
+                    <img src='{{image}}'><br>
+                    <div class="image-label">
+                        {{ subj_labels[loop.index0][0]}}:
+                        {# {% set emotions_list = values['emotions' ~ (loop.index0)].split(', ') %} #}
+                        {% for emot in emot_labels[loop.index0] %}
+                        <span style="background-color: hsl({{emotions[emot]['hsv'][0]}}, {{emotions[emot]['hsv'][1]}}%, 85%);
+                                    color: hsl({{emotions[emot]['hsv'][0]}}, {{emotions[emot]['hsv'][1]}}%, 15%);
+                                    padding: .1rem; margin: 0 .1rem;"> {{ emot }} </span>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+    </div>
 </main>
 <script src="{{ url_for('static', filename='jquery-3.4.1.min.js')}}"></script>
 <script src="{{ url_for('static', filename='jquery-ui.min.js')}}"></script>

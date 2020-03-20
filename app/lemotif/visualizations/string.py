@@ -12,8 +12,8 @@ from scipy.special import comb
 from lemotif.visualizations.utils import apply_shape, add_labels, shape_bool_mask
 
 
-def string(topics, emotions, icons, colors, size, background=(255, 255, 255), n_lines=150, line_width=5,
-           border_shape=True, border_color=None, text=True, **kwargs):
+def string(topics, emotions, icons, colors, size, background=(255, 255, 255), n_lines=150, line_width_string=5,
+           border_shape=True, border_color=None, text=True, offset_sd=0.2, **kwargs):
     if len(topics) == 0 or len(emotions) == 0:
         return None
     elif topics[0] is None:
@@ -45,7 +45,7 @@ def string(topics, emotions, icons, colors, size, background=(255, 255, 255), n_
     # For n number of curves, select arbitrary start and end point on boundary, then one random midpoints
     for line in range(n_lines):
         start, end = random.sample(border_points, 1)[0], random.sample(border_points, 1)[0]
-        offset = np.random.normal(scale=.2)
+        offset = np.random.normal(scale=offset_sd)
         mid1 = np.array([start[0]/2 + end[0]/2, start[1]/2 + end[1]/2])*(1+offset)
         points = [start, mid1, end]
 
@@ -64,7 +64,7 @@ def string(topics, emotions, icons, colors, size, background=(255, 255, 255), n_
 
         color = np.random.choice(colors_list)['rgb']
 
-        cv2.polylines(canvas, curve_points, False, [color[2], color[1], color[0]], line_width, lineType=cv2.LINE_AA)
+        cv2.polylines(canvas, curve_points, False, [color[2], color[1], color[0]], line_width_string, lineType=cv2.LINE_AA)
         cv2.polylines(canvas, curve_points, False, [int(color[2]*1.5), int(color[1]*1.5), int(color[0]*1.5)], 1, lineType=cv2.LINE_AA)
 
     if border_shape:

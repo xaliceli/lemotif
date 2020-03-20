@@ -12,7 +12,6 @@ html {
 
 h1, h2, h3 {
     font-family: 'Rubik', 'Helvetica', sans-serif;
-    /*color: #0037FF;*/
     margin: 1rem 0 0 0;
 }
 
@@ -152,6 +151,12 @@ input.emotions {
 #settings, #about {
     display: none;
     font-size: 95%;
+    width: 100%;
+}
+
+.vis-settings {
+    width: 100%;
+    display: none;
 }
 
 ul.checklist {
