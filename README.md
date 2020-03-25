@@ -8,13 +8,13 @@ We present Lemotif, an integrated natural language processing and image generati
 
 ## Sample Outputs
 
-![Sample Outputs](https://github.com/xaliceli/lemotif/blob/master/app/assets/docs/sample.png)
+![Sample Outputs](https://github.com/xaliceli/lemotif/blob/master/assets/docs/sample.png)
 
 ## Data & Models
 
 ### Dataset
 
-Our ![dataset](https://github.com/xaliceli/lemotif/blob/master/app/assets/data/lemotif-data-cleaned-flat.csv) contains 1,473 text samples with topic and emotion labels from the same Amazon MTurk respondents who wrote each journal entry. This dataset was manually cleaned to omit nonsensical and/or nonresponsive entries. Each text sample contains one positive topic label and up to multiple positive emotion labels.
+Our ![dataset](https://github.com/xaliceli/lemotif/blob/master/assets/data/lemotif-data-cleaned-flat.csv) contains 1,473 text samples with topic and emotion labels from the same Amazon MTurk respondents who wrote each journal entry. This dataset was manually cleaned to omit nonsensical and/or nonresponsive entries. Each text sample contains one positive topic label and up to multiple positive emotion labels.
 
 ### Trained Models
 
