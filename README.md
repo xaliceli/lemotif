@@ -14,16 +14,14 @@ By making patterns in emotions and their sources more apparent, Lemotif aims to 
 
 ## Data & Models
 
-* Autoencoder: Keras .h5 files can be found [here](https://github.com/xaliceli/lemotif/blob/master/app/models/ae/).
-* NLP parser: Tensorflow checkpoint can be found [here](https://drive.google.com/open?id=1-2PP0fk5_33qu0Lhyt3azFhAJTkIszmA).
-
 ### Dataset
 
 Our [dataset](https://github.com/xaliceli/lemotif/blob/master/assets/data/lemotif-data-cleaned-flat.csv) contains 1,473 text samples with topic and emotion labels from the same Amazon MTurk respondents who wrote each journal entry. This dataset was manually cleaned to omit nonsensical and/or nonresponsive entries. Each text sample contains one positive topic label and up to multiple positive emotion labels.
 
 ### Trained Models
 
-Coming soon!
+* Autoencoder: Keras .h5 files can be found [here](https://github.com/xaliceli/lemotif/blob/master/app/models/ae/).
+* NLP parser: Tensorflow checkpoint can be found [here](https://drive.google.com/open?id=1-2PP0fk5_33qu0Lhyt3azFhAJTkIszmA).
 
 ## Future Work
 
