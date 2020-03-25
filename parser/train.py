@@ -40,7 +40,7 @@ class BERTClassifier():
         num_train_steps = int(df.shape[0] / batch_size * epochs)
         num_warmup_steps = int(num_train_steps * warmup)
 
-        bert_config = modeling.BertConfig.from_json_file(self.con)
+        bert_config = modeling.BertConfig.from_json_file(self.config)
 
         train_examples = ut.create_examples(df)
         train_features = ut.convert_examples_to_features(train_examples, self.max_seq_len, self.tokenizer)
@@ -99,15 +99,14 @@ class BERTClassifier():
             all_gt = pd.concat([all_gt, x_test], axis=0)
             all_predictions = pd.concat([all_predictions, output_df], axis=0)
 
-        scores = self.score(all_gt, all_predictions, thresh='auto', metrics=['f1', 'precision', 'recall'], opt='f1')
-
         full_df = pd.concat([all_gt, all_predictions], axis=1)
         full_df.to_csv(os.path.join(self.out_dir, 'all_pred.csv'), index=False)
 
-        return scores
+        self.score(all_gt, all_predictions, thresh='auto', metrics=['f1', 'precision', 'recall', 'norm_acc'], opt='norm_acc')
+
 
     def score(self, gt, pred, thresh, metrics, opt):
-        scores = {}
+        scores = []
 
         if thresh == 'auto':
             thresholds = [v/100. for v in list(range(0, 100, 5))]
@@ -117,25 +116,44 @@ class BERTClassifier():
         gt_vals, pred_vals = gt.iloc[:, 1:], pred.iloc[:, 1:]
         all_gt, all_pred = np.empty((0)), np.empty((0))
         for label, values in gt_vals.iteritems():
-            scores[label], best_score, best_thresh, best_preds = {}, 0, 0, None
+            best_score, best_thresh, best_preds = 0, 0, None
             gt_values = values.values
             for t in thresholds:
-                scores[label][t] = {}
                 pred_values = pred_vals[label].values
                 thresh_preds = np.where(pred_values >= t, 1, 0)
+                row = [label, t, np.sum(gt_values), np.sum(thresh_preds),
+                       np.sum(np.logical_and(gt_values == thresh_preds, gt_values == 1)),
+                       np.sum(np.logical_and(gt_values == thresh_preds, gt_values == 0))]
                 for m in metrics:
                     evaluator = getattr(eval, m)
                     score = evaluator(gt_values, thresh_preds)
-                    scores[label][t][m] = score
                     if score > best_score and m == opt:
                         best_score, best_thresh, best_preds = score, t, thresh_preds
+                    row.append(score)
+                scores.append(row)
             all_gt, all_pred = np.concatenate((all_gt, gt_values)), np.concatenate((all_pred, best_preds))
-            scores[label]['best_thresh'] = best_thresh
 
-        scores['all'] = {}
+        summary_row = ['all', 'auto', np.sum(all_gt), np.sum(all_pred),
+                      np.sum(np.logical_and(all_gt == all_pred, all_pred == 1)),
+                      np.sum(np.logical_and(all_gt == all_pred, all_pred == 0))]
         for m in metrics:
             evaluator = getattr(ut, m)
             score = evaluator(all_gt, all_pred)
-            scores['all'][m] = score
+            summary_row.append(score)
+        scores.append(summary_row)
 
-        return scores
+        for t in thresholds:
+            thresh_preds = np.where(pred_vals.values >= t, 1, 0)
+            row = ['all', t, np.sum(gt_vals.values), np.sum(thresh_preds),
+                   np.sum(np.logical_and(gt_vals.values == thresh_preds, gt_vals.values == 1)),
+                   np.sum(np.logical_and(gt_vals.values == thresh_preds, gt_vals.values == 0))]
+            for m in metrics:
+                evaluator = getattr(eval, m)
+                score = evaluator(gt_vals.values, thresh_preds)
+                row.append(score)
+            scores.append(row)
+
+        scores_df = pd.DataFrame(scores,
+                                 columns=['label', 'threshold', 'n actual pos', 'n pred pos', 'n pred true pos', 'n pred true neg']
+                                         + metrics)
+        scores_df.to_csv(os.path.join(self.out_dir, 'acc_scores.csv'), index=False)

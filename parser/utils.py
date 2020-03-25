@@ -3,6 +3,16 @@ utils.py
 Utilities for model fine-tuning, mostly from official BERT release.
 """
 
+import pandas as pd
+import tensorflow as tf
+
+import bert
+from bert import run_classifier
+from bert import optimization
+from bert import tokenization
+from bert import modeling
+
+
 class InputExample(object):
     """A single training/test example for simple sequence classification."""
 
@@ -470,7 +480,7 @@ def model_fn_builder(bert_config, num_labels, init_checkpoint, learning_rate,
     return model_fn
 
 
-def input_fn_builder(features, seq_length, is_training, drop_remainder):
+def input_fn_builder(features, seq_length, is_training, drop_remainder, num_labels):
   """Creates an `input_fn` closure to be passed to TPUEstimator."""
 
   all_input_ids = []
@@ -509,7 +519,7 @@ def input_fn_builder(features, seq_length, is_training, drop_remainder):
                 shape=[num_examples, seq_length],
                 dtype=tf.int32),
         "label_ids":
-            tf.constant(all_label_ids, shape=[num_examples, len(class_var)], dtype=tf.int32),
+            tf.constant(all_label_ids, shape=[num_examples, num_labels], dtype=tf.int32),
     })
 
     if is_training:
@@ -522,12 +532,71 @@ def input_fn_builder(features, seq_length, is_training, drop_remainder):
   return input_fn
 
 
-def create_output(predictions):
-    probabilities = []
-    for (i, prediction) in enumerate(predictions):
-        preds = prediction["probabilities"]
-        probabilities.append(preds)
-    dff = pd.DataFrame(probabilities)
-    dff.columns = class_var
+def create_output(predictions, thresh=.2, max_s=1, max_e=4):
+    labels = {'afraid': {'threshold': 0.2, 'type': 'emotion', 'valence': 'negative'},
+              'angry': {'threshold': 0.1, 'type': 'emotion', 'valence': 'negative'},
+              'anxious': {'threshold': 0.05, 'type': 'emotion', 'valence': 'negative'},
+              'ashamed': {'threshold': 0.02, 'type': 'emotion', 'valence': 'negative'},
+              'awkward': {'threshold': 0.01, 'type': 'emotion', 'valence': 'neutral'},
+              'bored': {'threshold': 0.02, 'type': 'emotion', 'valence': 'neutral'},
+              'calm': {'threshold': 0.23, 'type': 'emotion', 'valence': 'neutral'},
+              'confused': {'threshold': 0.01, 'type': 'emotion', 'valence': 'neutral'},
+              'disgusted': {'threshold': 0.02, 'type': 'emotion', 'valence': 'negative'},
+              'excited': {'threshold': 0.04, 'type': 'emotion', 'valence': 'positive'},
+              'frustrated': {'threshold': 0.03, 'type': 'emotion', 'valence': 'negative'},
+              'happy': {'threshold': 0.69, 'type': 'emotion', 'valence': 'positive'},
+              'jealous': {'threshold': 0.01, 'type': 'emotion', 'valence': 'negative'},
+              'nostalgic': {'threshold': 0.03, 'type': 'emotion', 'valence': 'neutral'},
+              'proud': {'threshold': 0.06, 'type': 'emotion', 'valence': 'positive'},
+              'sad': {'threshold': 0.02, 'type': 'emotion', 'valence': 'negative'},
+              'satisfied': {'threshold': 0.13, 'type': 'emotion', 'valence': 'positive'},
+              'surprised': {'threshold': 0.02, 'type': 'emotion', 'valence': 'neutral'},
+              'exercise': {'threshold': 0.09, 'type': 'subject'},
+              'family': {'threshold': 0.12, 'type': 'subject'},
+              'food': {'threshold': 0.07, 'type': 'subject'},
+              'friends': {'threshold': 0.09, 'type': 'subject'},
+              'god': {'threshold': 0.08, 'type': 'subject'},
+              'health': {'threshold': 0.05, 'type': 'subject'},
+              'love': {'threshold': 0.04, 'type': 'subject'},
+              'recreation': {'threshold': 0.03, 'type': 'subject'},
+              'school': {'threshold': 0.09, 'type': 'subject'},
+              'sleep': {'threshold': 0.28, 'type': 'subject'},
+              'work': {'threshold': 0.23, 'type': 'subject'}}
+    predictions_s, predictions_e = [], []
+    for i, prediction in enumerate(predictions):
+        entry_s, entry_e = [], []
+        valences = {'positive': 0, 'negative': 0, 'neutral': 0}
+        for j, pred in enumerate(prediction['probabilities']):
+            label = list(labels.keys())[j]
+            threshold = labels[label]['threshold'] if thresh == 'auto' else thresh
+            if labels[label]['type'] == 'emotion':
+                valences[labels[label]['valence']] += pred
+            if pred >= threshold:
+                if labels[label]['type'] == 'subject':
+                    entry_s.append((label, pred))
+                else:
+                    entry_e.append((label, pred))
 
-    return dff
+        if len(entry_s) == 0:
+            entry_s = [None]
+        else:
+            entry_s = [x[0] for x in sorted(entry_s, key = lambda x: x[1], reverse=True)]
+            if len(entry_s) > max_s:
+                entry_s = entry_s[:max_s]
+
+        if len(entry_e) == 0:
+            if valences['positive'] > valences['negative'] and valences['positive'] > valences['neutral']:
+                entry_e = ['positive']
+            elif valences['negative'] > valences['positive'] and valences['negative'] > valences['neutral']:
+                entry_e = ['negative']
+            else:
+                entry_e = ['neutral']
+        else:
+            entry_e = [x[0] for x in sorted(entry_e, key = lambda x: x[1], reverse=True)]
+            if len(entry_e) > max_e:
+                entry_e = entry_e[:max_e]
+
+        predictions_s.append(entry_s)
+        predictions_e.append(entry_e)
+
+    return predictions_s, predictions_e
