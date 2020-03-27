@@ -1,6 +1,3 @@
-import csv
-import random
-import string
 from flask import Flask, render_template, request
 
 import utils

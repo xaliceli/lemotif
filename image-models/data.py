@@ -8,6 +8,7 @@ import os
 import cv2
 import numpy as np
 from sklearn.cluster import KMeans
+import scipy.stats as st
 import tensorflow as tf
 
 from colors import colors_dict
@@ -79,14 +80,14 @@ def map_to_colors(lab_in, lemotif_colors, sim_thresh=1500, freq_thresh=0.2, one_
 
 def generate_crops(source_dir, out_dir, crop_size, up_factor):
     img_files = []
-    for e in ['*.jpg', '*.jpeg', '*.JPG', '*.JPEG']:
+    for e in ['*.jpg', '*.jpeg', '*.JPG', '*.JPEG', '*.png']:
         img_files += glob.glob(os.path.join(source_dir, e))
     for img_file in img_files:
         img = cv2.imread(img_file)
         if img.shape[0] <= crop_size or img.shape[1] <= crop_size:
             max_factor = up_factor*crop_size/min(img.shape[0], img.shape[1])
             img = cv2.resize(img, (int(max_factor*img.shape[1]), int(max_factor*img.shape[0])))
-        for c in range(4):
+        for c in range(int(img.shape[0]/crop_size)):
             rand_row, rand_col = np.random.randint(0, img.shape[0]-256), np.random.randint(0, img.shape[1]-256)
             crop = img[rand_row:rand_row+256, rand_col:rand_col+256]
             lab = convert_to_lab(crop)
@@ -94,13 +95,13 @@ def generate_crops(source_dir, out_dir, crop_size, up_factor):
 
             if np.sum(mapped) > 0:
                 extension = img_file.split('.')[-1]
-                name = img_file.replace(f'.{extension}', '')\
+                name = img_file.replace('.' + extension, '')\
                     .replace(source_dir, out_dir)
-                new_file = f'{name}_{c}.{extension}'
+                new_file = name + '_' + str(c) + '.jpg'
 
                 cv2.imwrite(new_file, crop)
-                np.savetxt(new_file.replace(extension, 'txt'), mapped)
-                np.save(new_file.replace('.' + extension, ''), mapped)
+                np.savetxt(new_file.replace('jpg', 'txt'), mapped)
+                np.save(new_file.replace('.jpg', ''), mapped)
 
 
 class DataGenerator():
@@ -116,21 +117,31 @@ class DataGenerator():
         mapped = map_to_colors(dominant, self.tags)
         return mapped
 
-    def parse(self, file, label_file):
+    def parse_cond(self, file, label_file):
         img = tf.image.decode_jpeg(tf.io.read_file(file), channels=3)
         img = (tf.image.resize(img, self.shape, align_corners=True, preserve_aspect_ratio=False) - 127.5)/127.5
         label = tf.py_func(np.load, [label_file], tf.float32)
 
         return img, label
 
-    def gen_dataset(self):
+    def parse_blur(self, file):
+        img = tf.image.decode_jpeg(tf.io.read_file(file), channels=3)
+        img = (tf.image.resize(img, self.shape, align_corners=True, preserve_aspect_ratio=False) - 127.5)/127.5
+
+        return img
+
+    def gen_dataset(self, parser):
         img_files = []
         for e in ['*.jpg', '*.jpeg', '*.JPG', '*.JPEG']:
             img_files += glob.glob(os.path.join(self.source_dir, e))
 
-        labels = [img.replace(img.split('.')[-1], 'npy') for img in img_files]
+        if parser == 'parse_cond':
+            labels = [img.replace(img.split('.')[-1], 'npy') for img in img_files]
+            dataset_source = (img_files, labels)
+        else:
+            dataset_source = img_files
 
-        dataset = tf.data.Dataset.from_tensor_slices((img_files, labels)).repeat().\
-            shuffle(len(img_files)).map(self.parse).batch(self.batch_size)
+        dataset = tf.data.Dataset.from_tensor_slices(dataset_source).repeat().\
+            shuffle(len(img_files)).map(getattr(self, parser)).batch(self.batch_size)
 
         return dataset

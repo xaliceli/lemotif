@@ -4,9 +4,30 @@ IO utilities and custom operations.
 """
 
 import numpy as np
+import scipy.stats as st
 import tensorflow as tf
 import tensorflow.keras.layers as kl
 from tensorflow.keras import models, initializers, regularizers, constraints
+
+
+def gauss_kernel(blur_kernel, nsig=3):
+    interval = (2*nsig+1.)/(blur_kernel)
+    x = np.linspace(-nsig-interval/2., nsig+interval/2., blur_kernel+1)
+    kern1d = np.diff(st.norm.cdf(x))
+    kernel_raw = np.sqrt(np.outer(kern1d, kern1d))
+    kernel = kernel_raw/kernel_raw.sum()
+
+    kernel = tf.expand_dims(tf.stack([kernel, kernel, kernel], axis=2), axis=3)
+    return tf.cast(kernel, tf.float32)
+
+
+def minibatch_stddev_layer(x, batch_size):
+    _, h, w, _ = x.get_shape().as_list()
+    new_feat_shape = [batch_size, h, w, 0]
+    mean, var = tf.nn.moments(x, axes=[0], keep_dims=True)
+    stddev = tf.sqrt(tf.reduce_mean(var, keepdims=True))
+    new_feat = tf.tile(stddev, multiples=new_feat_shape)
+    return tf.concat([x, new_feat], axis=3)
 
 
 def add_noise(x, batch_size):
