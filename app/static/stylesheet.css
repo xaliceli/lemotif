@@ -150,7 +150,7 @@ input.emotions {
 
 #settings, #about {
     display: none;
-    font-size: 95%;
+    /*font-size: 95%;*/
     width: 100%;
 }
 

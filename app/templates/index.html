@@ -250,9 +250,7 @@
             <div id='motifs'>
                 {% for image in images %}
                 <div class="image-wrapper">
-                    {% if image|length == 0 %}
-                    No distinct topics or emotions were detected for this entry.
-                    {% else %}
+                    {% if image|length > 0 %}
                     <img src='{{image}}'><br>
                     <div class="image-label">
                         {{ subj_labels[loop.index0][0]}}:
