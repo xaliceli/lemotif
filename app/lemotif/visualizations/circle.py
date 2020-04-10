@@ -9,7 +9,7 @@ from lemotif.visualizations.utils import apply_shape, add_labels, shape_bool_mas
 
 
 def circle(topics, emotions, icons, colors, size, background=(255, 255, 255), min_rad_factor=.01, max_rad_factor=.09,
-           n_circles=100, max_attempts=1000, border_shape=True, border_color=None, border_width=1, text=True, **kwargs):
+           n_circles=100, max_attempts=250, border_shape=True, border_color=None, border_width=1, text=True, **kwargs):
     if len(topics) == 0 or len(emotions) == 0:
         return None
     elif topics[0] is None:
