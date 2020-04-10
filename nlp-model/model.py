@@ -1,5 +1,5 @@
 """
-train.py
+model.py
 Fine-tune BERT for classification task.
 """
 

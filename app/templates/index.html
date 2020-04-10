@@ -62,8 +62,9 @@
                     </div>
                     {% endfor %}
                 </div>
-                <h3 onclick="expand('settings')" class="toggle">Settings &#9662;</h3>
-                <div id="settings">
+                <h3 onclick="expand_and_toggle('settings', 'settings_display')" class="toggle">Settings &#9662;</h3>
+                <input type="hidden" id="settings_display" name="settings_display" value="{{settings['settings_display']}}">
+                <div id="settings" style="display: {{settings['settings_display']}};">
                     {% if settings['algorithm'] == 'carpet' %}
                     {% set carpet_display = 'inline-block' %}
                     {% else %}
@@ -100,14 +101,14 @@
                     <div id="settings-circle" class="vis-settings" style="display: {{circle_display}};">
                         <div class="slider-container">
                             <label for="n_circles">Number of circles</label><br>
-                            <input type="range" min="10" max="500" value={{(settings['n_circles'])|int}}
+                            <input type="range" min="10" max="150" value={{(settings['n_circles'])|int}}
                                    class="slider" id="n_circles" name="n_circles"
                                    oninput="n_circles_out.value = n_circles.value">
                             <output name="n_circles_out" id="n_circles_out">{{settings['n_circles']}}</output>
                         </div>
                         <div class="slider-container">
                             <label for="min_rad_factor">Min circle radius as percentage of motif size</label><br>
-                            <input type="range" min="1" max="50" value={{(settings['min_rad_factor']*100)|int}}
+                            <input type="range" min="1" max="10" value={{(settings['min_rad_factor']*100)|int}}
                                    class="slider" id="min_rad_factor" name="min_rad_factor"
                                    oninput="min_rad_factor_out.value = min_rad_factor.value + '%'">
                             <output name="min_rad_factor_out" id="min_rad_factor_out">
@@ -115,7 +116,7 @@
                         </div>
                         <div class="slider-container">
                             <label for="max_rad_factor">Max circle radius as percentage of motif size</label><br>
-                            <input type="range" min="1" max="50" value={{(settings['max_rad_factor']*100)|int}}
+                            <input type="range" min="10" max="50" value={{(settings['max_rad_factor']*100)|int}}
                                    class="slider" id="max_rad_factor" name="max_rad_factor"
                                    oninput="max_rad_factor_out.value = max_rad_factor.value + '%'">
                             <output name="max_rad_factor_out" id="max_rad_factor_out">

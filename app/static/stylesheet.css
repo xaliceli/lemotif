@@ -148,9 +148,12 @@ input.emotions {
     cursor: pointer;
 }
 
-#settings, #about {
+#settings {
+    width: 100%;
+}
+
+#about {
     display: none;
-    /*font-size: 95%;*/
     width: 100%;
 }
 

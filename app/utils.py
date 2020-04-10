@@ -12,6 +12,9 @@ from io import BytesIO
 
 def set_args():
     args = {}
+
+    # Show settings pane
+    args['settings_display'] = 'none'
     # Algorithm to use
     args['algorithm'] = 'watercolors'
     # Canvas size for output
@@ -27,7 +30,7 @@ def set_args():
     # CIRCLE ARGS
     args['n_circles'] = 100
     args['min_rad_factor'] = 0.01
-    args['max_rad_factor'] = 0.09
+    args['max_rad_factor'] = 0.10
 
     # GLASS ARGS
     args['icon_ratio'] = 0.1

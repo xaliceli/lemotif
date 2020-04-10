@@ -47,7 +47,6 @@ def home():
             error = 'Sorry, there was an error generating motifs for the provided inputs. Please try again.'
 
         subjects_render = [['topic unknown'] if x[0] is None else x for x in subjects_render]
-        print(all_text)
         subjects_render = [x for i, x in enumerate(subjects_render) if all_text[i][0] != '']
         emotions_render = [x for i, x in enumerate(emotions_render) if all_text[i][0] != '']
         images_encoded = [x for i, x in enumerate(images_encoded) if all_text[i][0] != '']

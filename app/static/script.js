@@ -6,6 +6,7 @@ function expand(element) {
         x.style.display = "none";
     }
 }
+
 function expand_and_hide(element) {
     var x = document.getElementById(element);
     if (x.style.display === "none" || x.style.display === "") {
@@ -20,6 +21,19 @@ function expand_and_hide(element) {
         document.getElementById(settings[i]).style.display = "none";
     }
 
+}
+
+function expand_and_toggle(element, toggle) {
+    var x = document.getElementById(element);
+    var t = document.getElementById(toggle);
+
+    if (x.style.display === "none" || x.style.display === "") {
+        x.style.display = "inline-block";
+        t.value = "inline-block";
+    } else {
+        x.style.display = "none";
+        t.value = "none";
+    }
 }
 
 $('#download').click(function(){
