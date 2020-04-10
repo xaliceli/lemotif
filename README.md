@@ -2,7 +2,7 @@
 
 [![DOI](https://zenodo.org/badge/183519985.svg)](https://zenodo.org/badge/latestdoi/183519985)
 
-[Demo](http://lemotif.cloudcv.org) | Building upon [https://arxiv.org/abs/1903.07766](https://arxiv.org/abs/1903.07766)
+[Demo](http://lemotif.cloudcv.org) | [Paper](https://arxiv.org/abs/1903.07766)
 
 We present Lemotif, an integrated natural language processing and image generation system that uses machine learning to (1) parse a text-based input journal entry describing the user’s day for salient themes and emotions and (2) visualize the detected themes and emotions in creative and appealing image motifs. Synthesizing approaches from artificial intelligence and psychology, Lemotif acts as an affective visual journal, encouraging users to regularly write and reflect on their daily experiences through visual reinforcement. 
 
@@ -34,9 +34,9 @@ Our [dataset](https://github.com/xaliceli/lemotif/blob/master/assets/data/lemoti
 
 ### Paper
 ```
-@misc{parikh2019lemotif,
-    title={Lemotif: Abstract Visual Depictions of your Emotional States in Life},
-    author={Devi Parikh},
+@misc{li2019lemotif,
+    title={Lemotif: An Affective Visual Journal Using Deep Neural Networks},
+    author={X. Alice Li and Devi Parikh},
     year={2019},
     eprint={1903.07766},
     archivePrefix={arXiv},
