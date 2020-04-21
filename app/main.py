@@ -1,18 +1,21 @@
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, session
 
 import utils
+from config import Config
 from lemotif import generator
 from lemotif.parsers import extract_labels
 
 app = Flask(__name__, template_folder='templates', static_folder='static')
-parser = extract_labels.BERTClassifier('models/bert', None, 29, batch_size=3)
+app.config.from_object(Config())
 
+parser = extract_labels.BERTClassifier('models/bert', None, 29, batch_size=3)
 
 @app.route('/', methods=['GET', 'POST'])
 def home():
     subjects, emotions = generator.load_assets('static/images/icons')
 
     if request.method == 'GET':
+        session['text'] = []
         args, values = utils.set_args()
         return render_template('index.html',
                                emotions=emotions,
@@ -27,7 +30,16 @@ def home():
         for idx in range(3):
             text_input = request.form.getlist('text' + str(idx + 1))
             all_text.append(text_input)
-        subjects_render, emotions_render = parser.predict(all_text)
+
+        if all_text == session['text']:
+            subjects_render = session['subjects']
+            emotions_render = session['emotions']
+        else:
+            subjects_render, emotions_render = parser.predict(all_text)
+            session['text'] = all_text
+            session['subjects'] = subjects_render
+            session['emotions'] = emotions_render
+
         args, values = utils.get_args()
 
         error, images_encoded = None, []

@@ -35,7 +35,7 @@ def set_args():
     # GLASS ARGS
     args['icon_ratio'] = 0.1
     args['size_flux'] = 0.33
-    args['passes'] = 10
+    args['passes'] = 5
     args['inc_floor'] = 0.5
     args['inc_ceiling'] = 0.75
     args['rand_alpha'] = True

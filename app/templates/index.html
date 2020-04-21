@@ -3,23 +3,7 @@
 <head>
     <title>Lemotif: An Affective Visual Journal</title>
     <link href="{{ url_for('static', filename='stylesheet.css')}}" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css?family=Rubik&display=swap"
-          rel="stylesheet">
-    <script type="text/javascript">
-        var emotionsDict = {
-        {
-            emotions | tojson
-        }
-        }
-        ;
-        var subjectsList = {
-        {
-            subjects | tojson
-        }
-        }
-        ;
-        var img_url = '/static/images/';
-    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Lora&family=Rubik:wght@400;500;600&display=swap" rel="stylesheet">
 </head>
 
 <body>
@@ -27,12 +11,12 @@
     <div class="container">
         <div id='input'>
             <h1>Lemotif: An Affective Visual Journal</h1>
-            <form method='post' id="inputs" action="{{ url_for('home')}}">
+            <form method='post' id="inputs" name="inputs" action="{{ url_for('home')}}">
                 {% for n in range(n_inputs) %}
                 {% if n == 0 %}
-                <h3>What was the most salient part of your day? How did it make you feel?</h3>
+                <h2>What was the most salient part of your day? How did it make you feel?</h2>
                 {% else %}
-                <h3>What was another salient part of your day? How did it make you feel?</h3>
+                <h2>What was another salient part of your day? How did it make you feel?</h2>
                 {% endif %}
                 <textarea id={{'text' ~ (loop.index0 + 1)}} name={{'text' ~ (loop.index0 + 1)}}
                           placeholder='Write a little about something that happened today and how you felt.'>{{values['text' ~ (loop.index0 + 1)]}}</textarea>
@@ -54,7 +38,7 @@
                     {% endif %}
                     <div class="tooltip">
                         <input type="radio" id="algo_{{algorithm}}" name="algorithm" value="{{algorithm}}"
-                               {{check}} onclick="expand_and_hide('settings-{{algorithm}}')">
+                               {{check}} onclick="expand_and_hide('settings-{{algorithm}}', 'inputs')">
                         <label for="algo_{{algorithm}}">{{algorithm | capitalize}}</label>
                         <div class="tooltip-hover">
                             <img src="static/images/preview/{{algorithm}}.png">
@@ -230,14 +214,14 @@
                 <div id="about">
                     <p>
                         Lemotif is a project by <a href="mailto:xaliceli@gmail.com">Alice Li</a> &
-                        <a href="mailto:deviparikh@gmail.com">Devi Parikh</a> building upon the ideas laid out in
-                        <a href="https://arxiv.org/pdf/1903.07766.pdf">this paper</a>.
+                        <a href="mailto:deviparikh@gmail.com">Devi Parikh</a>.
                         Our goal is to develop a fun, intuitive journalling tool helping users understand patterns
                         in
                         their emotional states and associated sources over time, thereby supporting emotional
                         well-being,
                         self-reflection, and opportunities for action.
-                        (<a href="http://github.com/xaliceli/lemotif">Source Code</a>)
+                        (<a href="http://github.com/xaliceli/lemotif">Source Code</a>) (
+                        <a href="https://arxiv.org/pdf/1903.07766.pdf">Paper</a>)
                     </p>
                     <p>No user data is stored in this demo.</p>
                 </div>
@@ -252,14 +236,16 @@
                 {% for image in images %}
                 <div class="image-wrapper">
                     {% if image|length > 0 %}
-                    <img src='{{image}}'><br>
+                    <div class="image-image">
+                        <img src='{{image}}'>
+                    </div>
                     <div class="image-label">
-                        {{ subj_labels[loop.index0][0]}}:
+                        <div class='label-tag'>{{ subj_labels[loop.index0][0]}}</div>
                         {# {% set emotions_list = values['emotions' ~ (loop.index0)].split(', ') %} #}
                         {% for emot in emot_labels[loop.index0] %}
-                        <span style="background-color: hsl({{emotions[emot]['hsv'][0]}}, {{emotions[emot]['hsv'][1]}}%, 85%);
-                                    color: hsl({{emotions[emot]['hsv'][0]}}, {{emotions[emot]['hsv'][1]}}%, 15%);
-                                    padding: .1rem; margin: 0 .1rem;"> {{ emot }} </span>
+                        <div class='label-tag'
+                             style="background-color: hsl({{emotions[emot]['hsv'][0]}}, {{emotions[emot]['hsv'][1]}}%, 85%);
+                             color: hsl({{emotions[emot]['hsv'][0]}}, {{emotions[emot]['hsv'][1]}}%, 15%);"> {{ emot }} </div>
                         {% endfor %}
                     </div>
                     {% endif %}
@@ -271,8 +257,6 @@
     </div>
 </main>
 <script src="{{ url_for('static', filename='jquery-3.4.1.min.js')}}"></script>
-<script src="{{ url_for('static', filename='jquery-ui.min.js')}}"></script>
-<script src="{{ url_for('static', filename='html2canvas.min.js')}}"></script>
 <script src="{{ url_for('static', filename='script.js')}}"></script>
 </body>
 </html>
