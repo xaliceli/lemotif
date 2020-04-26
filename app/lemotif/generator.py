@@ -51,8 +51,11 @@ def generate_visual(icons, colors, topics, emotions, algorithm, out_dir=None, si
         algorithm (function): Algorithm to generate visual using.
     """
     algorithm = globals()[algorithm]
-    all_out = []
-    for id, (sub_t, sub_e) in enumerate(zip(topics, emotions)):
+    topics_use = [t for t in topics if t[0] is not None]
+    emotions_use = [e for i, e in enumerate(emotions) if topics[i][0] is not None]
+    all_out, all_combined = [], np.zeros((size[0]+20, size[1]*len(topics_use), 3))
+
+    for id, (sub_t, sub_e) in enumerate(zip(topics_use, emotions_use)):
         if len(sub_t) > 0:
             sub_t = [sub_t[0]]
         if len(sub_e) > 4:
@@ -66,10 +69,11 @@ def generate_visual(icons, colors, topics, emotions, algorithm, out_dir=None, si
             summary_args = args.copy()
             summary_args['border_shape'] = False
             outputs.append(algorithm(
-                [item for sublist in topics for item in sublist],
-                [item for sublist in emotions for item in sublist],
+                [item for sublist in topics_use for item in sublist],
+                [item for sublist in emotions_use for item in sublist],
                 icons, colors, size, **summary_args)
             )
+
         if out_dir is not None:
             if not os.path.isdir(out_dir):
                 os.mkdir(out_dir)
@@ -77,12 +81,12 @@ def generate_visual(icons, colors, topics, emotions, algorithm, out_dir=None, si
                 final = np.zeros((outputs[0].shape[0], outputs[0].shape[1]*len(sub_t), 3))
                 for i, vis in enumerate(outputs):
                     final[:, i*outputs[0].shape[1]:(i+1)*outputs[0].shape[1], :] = vis
-                print(os.path.join(out_dir, str(id) + '.png'))
                 cv2.imwrite(os.path.join(out_dir, str(id) + '.png'), final)
             else:
                 for i, vis in enumerate(outputs):
                     cv2.imwrite(os.path.join(out_dir, str(i) + '.png'), vis)
 
         all_out += outputs
+        all_combined[:, id * size[1]:(id + 1) * size[1], :] = outputs[0]
 
-    return all_out
+    return all_out, all_combined

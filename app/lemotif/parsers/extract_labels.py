@@ -1,6 +1,6 @@
 """
-train.py
-Fine-tune BERT for classification task.
+extract_labels.py
+Load NLP model and perform inference
 """
 
 import os

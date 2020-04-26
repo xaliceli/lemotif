@@ -39,7 +39,6 @@ def circle(topics, emotions, icons, colors, size, background=(255, 255, 255), mi
     min_rad, max_rad = min_rad_factor*size[0], max_rad_factor*size[0]
     circles_to_place = (min_rad + (max_rad - min_rad) * np.random.random(n_circles) * np.random.random(n_circles)).astype('int')
     circles_to_place[::-1].sort()
-    print(circles_to_place)
 
     # For each circle, X number of attempts to place it without going outside boundary or overlapping another circle
     can_place = bool_mask

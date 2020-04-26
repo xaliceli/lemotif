@@ -110,18 +110,19 @@ def apply_shape(canvas, icons, topics, size, border_color, background):
 
 
 def add_labels(canvas, topics, emotions, colors):
-    pil_im = Image.fromarray(canvas.astype('uint8'))
-    draw = ImageDraw.Draw(pil_im)
-    font = ImageFont.truetype('/System/Library/Fonts/HelveticaNeue.ttc', 22)
+    label_canvas = np.ones((20, canvas.shape[1], 3))*255
+    label_canvas = Image.fromarray(label_canvas.astype('uint8'))
+    draw = ImageDraw.Draw(label_canvas)
+    font = ImageFont.truetype('/System/Library/Fonts/HelveticaNeue.ttc', 14)
 
     for topic in topics:
-        draw.text((10, canvas.shape[0]-28), '#' + topic, font=font, fill=(0, 0, 0))
+        draw.text((10, 0), '#' + topic, font=font, fill=(0, 0, 0))
 
     x_offset = font.getsize('#' + topic)[0] + 15
     for emotion in emotions:
-        draw.text((x_offset, canvas.shape[0]-28), '#' + emotion, font=font, fill=colors[emotion]['rgb'][::-1])
+        draw.text((x_offset, 0), '#' + emotion, font=font, fill=colors[emotion]['rgb'][::-1])
         x_offset += font.getsize('#' + emotion)[0] + 10
 
-    canvas = np.array(pil_im)
+    canvas = np.concatenate((canvas, label_canvas), axis=0)
 
     return canvas

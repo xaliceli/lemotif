@@ -314,7 +314,7 @@ ul.checklist li input[type="checkbox"] {
     margin: 1rem 0;
 }
 
-input[type="submit"], input[type="submit"].active {
+input[type="submit"], input[type="submit"].active, .box {
     background-color: #333;
     color: #fff;
     border: none;
@@ -322,6 +322,10 @@ input[type="submit"], input[type="submit"].active {
     font-family: 'Rubik', 'Helvetica', sans-serif;
     font-size: .9025rem;
     cursor: pointer;
+}
+
+.box a, .box a:visited, .box a:active {
+    color: #fff;
 }
 
 input[type="submit"]:focus {

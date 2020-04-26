@@ -59,7 +59,7 @@ def set_args():
     # Scalar representing the relative brightness value of borders
     args['border_color'] = 0.5
     # Display text labels at bottom
-    args['text'] = False
+    args['text'] = True
     # Summary motif
     args['summary'] = False
 

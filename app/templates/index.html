@@ -24,6 +24,9 @@
                 <br><br>
                 <input type="submit" value=">> Generate Motifs" form="inputs"
                        onclick="document.getElementById('vis').innerHTML = 'Please wait, generating...';">
+                {% if combined %}
+                    <span class='box'><a href='{{combined}}' download>⇩ Download Motifs</a></span>
+                {% endif %}
 
                 <div class="slider-container">
                     <h3>Lemotif Style</h3>

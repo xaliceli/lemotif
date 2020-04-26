@@ -21,6 +21,7 @@ def home():
                                emotions=emotions,
                                subjects=sorted(subjects.keys()),
                                images=None,
+                               combined=None,
                                settings=args,
                                values=values,
                                error=None,
@@ -43,29 +44,41 @@ def home():
         args, values = utils.get_args()
 
         error, images_encoded = None, []
-        try:
-            motifs = generator.generate_visual(icons=subjects,
-                                               colors=emotions,
-                                               topics=subjects_render,
-                                               emotions=emotions_render,
-                                               out_dir=None,
-                                               **args)
-            for motif in motifs:
-                if motif is None:
-                    images_encoded.append('')
-                else:
-                    images_encoded.append(utils.img_to_str(motif))
-        except:
-            error = 'Sorry, there was an error generating motifs for the provided inputs. Please try again.'
+        # try:
+        motifs, combined = generator.generate_visual(icons=subjects,
+                                                     colors=emotions,
+                                                     topics=subjects_render,
+                                                     emotions=emotions_render,
+                                                     out_dir=None,
+                                                     **args)
+
+        # combined = None
+
+        # if concat:
+        #     combined = np.zeros((outputs[0].shape[0], outputs[0].shape[1] * len(sub_t), 3))
+        #     for i, vis in enumerate(outputs):
+        #         combined[:, i * outputs[0].shape[1]:(i + 1) * outputs[0].shape[1], :] = vis
+        # all_combined += [combined]
+
+        for motif in motifs:
+            if motif is None:
+                images_encoded.append('')
+            else:
+                images_encoded.append(utils.img_to_str(motif[:-20, ...]))
+        combined_encoded = utils.img_to_str(combined)
+
+        # except:
+        #     error = 'Sorry, there was an error generating motifs for the provided inputs. Please try again.'
 
         subjects_render = [['topic unknown'] if x[0] is None else x for x in subjects_render]
         subjects_render = [x for i, x in enumerate(subjects_render) if all_text[i][0] != '']
         emotions_render = [x for i, x in enumerate(emotions_render) if all_text[i][0] != '']
-        images_encoded = [x for i, x in enumerate(images_encoded) if all_text[i][0] != '']
+
         return render_template('index.html',
                                emotions=emotions,
                                subjects=sorted(subjects.keys()),
                                images=images_encoded,
+                               combined=combined_encoded,
                                settings=args,
                                values=values,
                                error=error,
