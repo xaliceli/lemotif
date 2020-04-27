@@ -51,8 +51,8 @@ def generate_visual(icons, colors, topics, emotions, algorithm, out_dir=None, si
         algorithm (function): Algorithm to generate visual using.
     """
     algorithm = globals()[algorithm]
-    topics_use = [t for t in topics if t[0] is not None]
-    emotions_use = [e for i, e in enumerate(emotions) if topics[i][0] is not None]
+    topics_use = [t for t in topics if t[0] != '']
+    emotions_use = [e for i, e in enumerate(emotions) if topics[i][0] != '']
     all_out, all_combined = [], np.zeros((size[0]+20, size[1]*len(topics_use), 3))
 
     for id, (sub_t, sub_e) in enumerate(zip(topics_use, emotions_use)):

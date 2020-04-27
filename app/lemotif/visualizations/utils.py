@@ -116,9 +116,12 @@ def add_labels(canvas, topics, emotions, colors):
     font = ImageFont.truetype('/System/Library/Fonts/HelveticaNeue.ttc', 14)
 
     for topic in topics:
-        draw.text((10, 0), '#' + topic, font=font, fill=(0, 0, 0))
+        if topic is not None:
+            draw.text((10, 0), '#' + topic, font=font, fill=(0, 0, 0))
+            x_offset = font.getsize('#' + topic)[0] + 15
+        else:
+            x_offset = 10
 
-    x_offset = font.getsize('#' + topic)[0] + 15
     for emotion in emotions:
         draw.text((x_offset, 0), '#' + emotion, font=font, fill=colors[emotion]['rgb'][::-1])
         x_offset += font.getsize('#' + emotion)[0] + 10

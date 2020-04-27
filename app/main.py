@@ -40,6 +40,7 @@ def home():
             session['text'] = all_text
             session['subjects'] = subjects_render
             session['emotions'] = emotions_render
+        subjects_render = [x if all_text[i][0] != '' else [''] for i, x in enumerate(subjects_render)]
 
         args, values = utils.get_args()
 
