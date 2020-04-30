@@ -1,9 +1,11 @@
 <!DOCTYPE html>
-<html>
+<html prefix="og: http://ogp.me/ns#">
 <head>
     <title>Lemotif: An Affective Visual Journal</title>
     <link href="{{ url_for('static', filename='stylesheet.css')}}" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Lora&family=Rubik:wght@400;500;600&display=swap" rel="stylesheet">
+    <meta property="og:title" content="Lemotif: An Affective Visual Journal Using Deep Neural Networks">
+    <meta property="og:image" content="{{ url_for('static', filename='images/page_preview.png')}}">
 </head>
 
 <body>
