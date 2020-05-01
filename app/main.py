@@ -1,4 +1,5 @@
 from flask import Flask, render_template, request, session
+import numpy as np
 
 import utils
 from config import Config
@@ -32,7 +33,7 @@ def home():
             text_input = request.form.getlist('text' + str(idx + 1))
             all_text.append(text_input)
 
-        if all_text == session['text']:
+        if np.all(np.logical_or(np.array(all_text) == np.array(session['text']), np.array(all_text) == '')):
             subjects_render = session['subjects']
             emotions_render = session['emotions']
         else:
