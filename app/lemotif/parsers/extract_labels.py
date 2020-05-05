@@ -1,6 +1,6 @@
 """
 extract_labels.py
-Load NLP model and perform inference
+Load NLP model and perform inference.
 """
 
 import os
@@ -37,6 +37,11 @@ class BERTClassifier():
         print('BERT model initialized.')
 
     def load_models(self):
+        """
+        Load and initialize saved BERT model.
+
+        :return: Tensorflow Estimator with saved weights.
+        """
         bert_config = modeling.BertConfig.from_json_file(self.config)
 
         tokenization.validate_case_matches_checkpoint(True, self.init_ckpt)
@@ -64,6 +69,12 @@ class BERTClassifier():
         return estimator
 
     def predict(self, features):
+        """
+        Predict probabilities of each label being true.
+
+        :param features: Input text to predict upon (list).
+        :return: Probabilities for each subject and emotion label (lists).
+        """
         predict_examples = ut.create_examples(pd.DataFrame(features), False)
         test_features = ut.convert_examples_to_features(predict_examples, self.max_seq_len, self.tokenizer)
         predict_input_fn = ut.input_fn_builder(features=test_features, seq_length=self.max_seq_len, is_training=False,

@@ -46,21 +46,21 @@ def home():
         args, values = utils.get_args()
 
         error, images_encoded = None, []
-        try:
-            motifs, combined = generator.generate_visual(icons=subjects,
-                                                         colors=emotions,
-                                                         topics=subjects_render,
-                                                         emotions=emotions_render,
-                                                         out_dir=None,
-                                                         **args)
-            for motif in motifs:
-                if motif is None:
-                    images_encoded.append('')
-                else:
-                    images_encoded.append(utils.img_to_str(motif[:-20, ...]))
-            combined_encoded = utils.img_to_str(combined)
-        except:
-            error = 'Sorry, there was an error generating motifs for the provided inputs. Please try again.'
+        # try:
+        motifs, combined = generator.generate_visual(icons=subjects,
+                                                     colors=emotions,
+                                                     topics=subjects_render,
+                                                     emotions=emotions_render,
+                                                     out_dir=None,
+                                                     **args)
+        for motif in motifs:
+            if motif is None:
+                images_encoded.append('')
+            else:
+                images_encoded.append(utils.img_to_str(motif[:-20, ...]))
+        combined_encoded = utils.img_to_str(combined)
+        # except:
+        #     error = 'Sorry, there was an error generating motifs for the provided inputs. Please try again.'
 
         subjects_render = [['topic unknown'] if x[0] is None else x for x in subjects_render]
         subjects_render = [x for i, x in enumerate(subjects_render) if all_text[i][0] != '']

@@ -1,6 +1,6 @@
 """
 carpet.py
-Carpet visualization
+Carpet visualization.
 """
 import gc
 import cv2
@@ -15,6 +15,26 @@ def carpet(topics, emotions, icons, colors, size, background=(255, 255, 255),
            border_shape=True, border_color=None, text=True,
            tile_ratio=.1, line_width=1, rotations=4, rot_degree=45, num_lines=3,
            **kwargs):
+    """
+    Carpet visualization.
+
+    :param topics: Topics to use (list).
+    :param emotions: Emotions to use (list).
+    :param icons: Shape icons (dict).
+    :param colors: Emotion colors (dict).
+    :param size: Size of output (tuple).
+    :param background: Background color in RGB (tuple).
+    :param border_shape: Whether to apply icon shape as border (bool).
+    :param border_color: Border color in RGB (tuple).
+    :param text: Include text labels below visualization (bool).
+    :param tile_ratio: Ratio of tile sizes to overall image size (float).
+    :param line_width: Width of lines drawn (int).
+    :param rotations: Number of rotations for lines (int).
+    :param rot_degree: Degree of rotations for lines (int).
+    :param num_lines: Number of lines (int).
+    :param kwargs: Additional arguments (dict).
+    :return: Visualization (array).
+    """
     if len(topics) == 0 or len(emotions) == 0:
         return None
     elif topics[0] is None:

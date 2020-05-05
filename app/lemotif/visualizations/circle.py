@@ -2,7 +2,6 @@
 circle.py
 Circle Packing visualization
 """
-import cv2
 import numpy as np
 
 from lemotif.visualizations.utils import apply_shape, add_labels, shape_bool_mask
@@ -10,6 +9,26 @@ from lemotif.visualizations.utils import apply_shape, add_labels, shape_bool_mas
 
 def circle(topics, emotions, icons, colors, size, background=(255, 255, 255), min_rad_factor=.01, max_rad_factor=.09,
            n_circles=100, max_attempts=100, border_shape=True, border_color=None, border_width=1, text=True, **kwargs):
+    """
+    Circle packing visualization.
+
+    :param topics: Topics to use (list).
+    :param emotions: Emotions to use (list).
+    :param icons: Shape icons (dict).
+    :param colors: Emotion colors (dict).
+    :param size: Size of output (tuple).
+    :param background: Background color in RGB (tuple).
+    :param border_shape: Whether to apply icon shape as border (bool).
+    :param border_color: Border color in RGB (tuple).
+    :param text: Include text labels below visualization (bool).
+    :param min_rad_factor: Minimum ratio of circle radius to image size (float).
+    :param max_rad_factor: Maximum ratio of circle radius to image size (float).
+    :param n_circles: Number of circles (int).
+    :param max_attempts: Maximum number of attempts to place each circle (int).
+    :param border_width: Circle border width (int).
+    :param kwargs: Additional arguments (dict).
+    :return: Visualization (array).
+    """
     if len(topics) == 0 or len(emotions) == 0:
         return None
     elif topics[0] is None:

@@ -1,6 +1,6 @@
 """
 condgan.py
-Conditional GAN model
+Conditional GAN model. Supports progressive growing e.g. in the manner of StyleGAN.
 """
 import glob
 import os
@@ -56,6 +56,7 @@ class ConditionalGAN():
 
 
     def init_models(self, start_size, fade_on, lr, b1, b2):
+        """Define generator and discriminator models plus optimizers."""
         # Build models
         generator_model = getattr(models, self.generator_model)
         self.generator = generator_model(start_size, fade_on, self.z_dim,
@@ -88,6 +89,7 @@ class ConditionalGAN():
                                               discriminator=self.discriminator)
 
     def generator_pass(self, noise, conditioning_noised, fade, ones, training=True):
+        """Forward pass."""
         if 'stylegan' in self.generator_model:
             generated_imgs = self.generator(inputs=[noise, conditioning_noised, fade, ones], training=training)
         else:
@@ -96,6 +98,7 @@ class ConditionalGAN():
         return generated_imgs
 
     def train_step(self, imgs, conditioning, fade, ones):
+        """Make one update step."""
         # Generate noise from normal distribution
         noise = tf.random.normal([self.batch_size, self.z_dim])
         conditioning_noised = tf.clip_by_value(
@@ -132,6 +135,7 @@ class ConditionalGAN():
         self.best_disc_loss = min(self.best_disc_loss, self.tot_disc_loss) if self.best_disc_loss else self.tot_disc_loss
 
     def train(self, train_data, img_size, start_size, iterations, lr, save_dir, b1, b2, save_int, **kwargs):
+        """Train over specified number of iterations per settings."""
         if not os.path.isdir(save_dir): os.mkdir(save_dir)
         gen_steps, gen_res, disc_steps, disc_res = self.load_saved_models(save_dir)
 
@@ -184,8 +188,10 @@ class ConditionalGAN():
 
 
     def update_models(self, size):
-        # Updates generator and discriminator models to add new layers corresponding to next resolution size
-        # Retains weights previously learned from lower resolutions
+        """
+        Update generator and discriminator models to add new layers corresponding to next resolution size.
+        Retain weights previously learned from lower resolutions.
+        """
         new_size = size*2
         generator_model = getattr(models, self.generator_model)
         new_generator = generator_model(new_size, True, self.z_dim,
@@ -222,22 +228,22 @@ class ConditionalGAN():
             print(self.discriminator.summary())
 
     def plot_models(self, size, save_dir):
-        # Plot model structure
+        """Plot model structure"""
         tf.keras.utils.plot_model(self.generator, show_shapes=True,
                                   to_file=os.path.join(save_dir, str(size) + '_gen.jpg'))
         tf.keras.utils.plot_model(self.discriminator, show_shapes=True,
                                   to_file=os.path.join(save_dir, str(size) + '_disc.jpg'))
 
     def generator_loss(self, generated_disc):
-        # WGAN-GP loss: https://arxiv.org/pdf/1704.00028.pdf
+        """Gen loss from WGAN-GP loss: https://arxiv.org/pdf/1704.00028.pdf"""
         # Negative so that gradient descent maximizes critic score received by generated output
         return -tf.reduce_mean(generated_disc)
 
     def discriminator_loss(self, real_imgs, generated_imgs, real_disc, generated_disc, conditioning, fade, gp_lambda=10,
                            epsilon=0.001):
-        # WGAN-GP loss: https://arxiv.org/pdf/1704.00028.pdf
-        # Difference between critic scores received by generated output vs real video
-        # Lower values mean that the real video samples are receiving higher scores, therefore
+        """Disc loss from WGAN-GP loss: https://arxiv.org/pdf/1704.00028.pdf"""
+        # Difference between critic scores received by generated output vs real images
+        # Lower values mean that the real image samples are receiving higher scores, therefore
         # gradient descent maximizes discriminator accuracy
         out_size = real_imgs.get_shape().as_list()
         d_cost = tf.reduce_mean(generated_disc) - tf.reduce_mean(real_disc)
@@ -263,6 +269,7 @@ class ConditionalGAN():
         return d_cost + gradient_penalty + epsilon_penalty
 
     def conditioning_loss(self, true_labels, true_pred, gen_pred):
+        """Conditioning loss."""
         ce_true = tf.reduce_sum(tf.nn.sigmoid_cross_entropy_with_logits(
             labels=true_labels, logits=true_pred))
         ce_gen = tf.reduce_sum(tf.nn.sigmoid_cross_entropy_with_logits(
@@ -271,6 +278,7 @@ class ConditionalGAN():
         return ce_true, ce_gen
 
     def generate(self, epoch, save_dir, num_out, conditioning, fade=1.0):
+        """Inference pass to produce and save image."""
         gen_noise = tf.random.normal([num_out, self.z_dim])
         fade, ones = tf.constant(fade, shape=[num_out, 1]), tf.ones((num_out, 1))
         generated_imgs = self.generator_pass(gen_noise, conditioning, fade, ones, training=False)
@@ -279,6 +287,7 @@ class ConditionalGAN():
                       name=str(generated_imgs[0].shape[-2]) + '_' + str(epoch) + '_')
 
     def save_img(self, img_tensor, conditioning, save_dir, name):
+        """Save out image as JPG."""
         img = tf.cast(255 * (img_tensor + 1)/2, tf.uint8)
         for i, ind_img in enumerate(img):
             encoded = tf.image.encode_jpeg(ind_img)
@@ -286,6 +295,7 @@ class ConditionalGAN():
         np.savetxt(os.path.join(save_dir, name + '.txt'), conditioning)
 
     def save_learning_curve(self, save_dir, res):
+        """Save out losses as plot."""
         plt.plot(range(len(self.gen_loss_curve)), self.gen_loss_curve, color='g', linewidth='1')
         plt.xlabel("Iterations")
         plt.ylabel("Generator Loss")
@@ -299,6 +309,7 @@ class ConditionalGAN():
         plt.clf()
 
     def load_saved_models(self, save_dir):
+        """Load models from checkpoints."""
         gen_checkpoints = glob.glob(os.path.join(save_dir, 'gen-*.h5'))
         max_gen, gen_res, max_disc, disc_res = 0, None, 0, None
         if len(gen_checkpoints) > 0:
@@ -321,6 +332,7 @@ class ConditionalGAN():
         return max_gen, gen_res, max_disc, disc_res
 
     def save_models(self, save_dir, res, current_steps, gen_steps, disc_steps):
+        """Save models as checkpoints."""
         self.generator.save(
             os.path.join(save_dir, 'gen-' + str(res) + '-' + str(gen_steps + current_steps) + '.h5'))
         self.discriminator.save(

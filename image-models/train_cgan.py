@@ -1,6 +1,6 @@
 """
-train.py
-Train model.
+train_cgan.py
+Train conditional GAN style model.
 """
 import os
 import tensorflow as tf

@@ -45,11 +45,13 @@ def get_dominant_color(image, k=6, image_processing_size=(200, 200), thresh=0.0)
 
 
 def convert_to_lab(image):
+    """Convert RGB image to LAB."""
     image = cv2.cvtColor(image, cv2.COLOR_BGR2LAB)
     return image.reshape((image.shape[0] * image.shape[1], 3))
 
 
 def map_to_colors(lab_in, lemotif_colors, sim_thresh=1500, freq_thresh=0.2, one_hot=True):
+    """Extract dominant colors from image based on set of specified colors."""
     all_colors = []
     for color, info in lemotif_colors.items():
         all_colors.append(lemotif_colors[color]['lab'])
@@ -79,6 +81,7 @@ def map_to_colors(lab_in, lemotif_colors, sim_thresh=1500, freq_thresh=0.2, one_
 
 
 def generate_crops(source_dir, out_dir, crop_size, up_factor):
+    """Generate random crops for training."""
     img_files = []
     for e in ['*.jpg', '*.jpeg', '*.JPG', '*.JPEG', '*.png']:
         img_files += glob.glob(os.path.join(source_dir, e))

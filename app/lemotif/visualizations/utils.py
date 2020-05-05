@@ -10,6 +10,7 @@ from PIL import ImageFont, ImageDraw, Image
 
 
 def rgb_to_hsv(rgb):
+    """Convert RGB color to HSV."""
     r, g, b = rgb
     r = float(r)
     g = float(g)
@@ -35,9 +36,7 @@ def rgb_to_hsv(rgb):
 
 
 def fill_color(shape, color, border_color=None, color_type='rgb'):
-    """
-    Fills in shape delineated by black lines with specified color.
-    """
+    """Fill in shape delineated by black lines with specified color."""
     # Get coordinates of borders
     borders = np.array(np.where(shape == 0)).T
     filled = np.ones((shape.shape[0], shape.shape[1], 3), dtype='uint8')*255
@@ -59,6 +58,7 @@ def fill_color(shape, color, border_color=None, color_type='rgb'):
 
 
 def bg_mask(icon_resized, colors, border_color):
+    """Mask region."""
     mask = np.zeros(icon_resized.shape[:-1], dtype=bool)
     for color in colors:
         mask = np.logical_or(mask,
@@ -70,6 +70,7 @@ def bg_mask(icon_resized, colors, border_color):
 
 
 def overlap_mask(canvas, icon_resized, adj_y, icon_size, start, background):
+    """Return masks based on overlap of existing placements and new placement."""
     # Blend region = non-background regions in canvas and icon
     mask = np.logical_and(
         np.all(canvas[adj_y:adj_y + icon_size, start[1]:start[1] + icon_size] != background, -1),
@@ -81,6 +82,7 @@ def overlap_mask(canvas, icon_resized, adj_y, icon_size, start, background):
 
 
 def fill_canvas(canvas, background, mask, size, icon_resized, start, adj_y, icon_size, alpha):
+    """Fill canvas based on mask."""
     if mask is None:
         # If canvas is not blank, alpha-blend only overlap regions
         if np.sum(canvas) != np.sum(background) * size[0] * size[1]:
@@ -96,12 +98,14 @@ def fill_canvas(canvas, background, mask, size, icon_resized, start, adj_y, icon
 
 
 def shape_bool_mask(icons, topics, size, border_color):
+    """Boolean mask based on shape."""
     outline_mask = fill_color(cv2.resize(icons[random.choice(topics)], size), (0, 0, 0), border_color) / 255
     outline_mask = ~outline_mask.astype(bool)
     return outline_mask
 
 
 def apply_shape(canvas, icons, topics, size, border_color, background):
+    """Apply shape to canvas, retaining only region within shape."""
     outline_mask = shape_bool_mask(icons, topics, size, border_color)
     final_canvas = np.ones((size[0], size[1], 3))
     final_canvas[..., :] = background
@@ -109,11 +113,12 @@ def apply_shape(canvas, icons, topics, size, border_color, background):
     return final_canvas
 
 
-def add_labels(canvas, topics, emotions, colors):
+def add_labels(canvas, topics, emotions, colors, font_path='/System/Library/Fonts/HelveticaNeue.ttc'):
+    """Add text labels to bottom of image."""
     label_canvas = np.ones((20, canvas.shape[1], 3))*255
     label_canvas = Image.fromarray(label_canvas.astype('uint8'))
     draw = ImageDraw.Draw(label_canvas)
-    font = ImageFont.truetype('/System/Library/Fonts/HelveticaNeue.ttc', 14)
+    font = ImageFont.truetype(font_path, 14)
 
     for topic in topics:
         if topic is not None:

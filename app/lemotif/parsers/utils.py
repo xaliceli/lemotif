@@ -2,14 +2,9 @@
 utils.py
 Utilities for model fine-tuning, mostly from official BERT release.
 """
-
-import pandas as pd
 import tensorflow as tf
 
-import bert
-from bert import run_classifier
 from bert import optimization
-from bert import tokenization
 from bert import modeling
 
 
@@ -17,7 +12,8 @@ class InputExample(object):
     """A single training/test example for simple sequence classification."""
 
     def __init__(self, guid, text_a, text_b=None, labels=None):
-        """Constructs a InputExample.
+        """
+        Constructs a InputExample.
 
         Args:
             guid: Unique id for the example.
@@ -47,6 +43,7 @@ class InputFeatures(object):
 
 def create_examples(df, labels_available=True):
     """Creates examples for the training and dev sets."""
+
     examples = []
     for (i, row) in enumerate(df.values):
         guid = i
@@ -533,6 +530,15 @@ def input_fn_builder(features, seq_length, is_training, drop_remainder, num_labe
 
 
 def create_output(predictions, thresh=.2, max_s=1, max_e=4):
+    """
+    Format raw predictions into binary classifications.
+
+    :param predictions: Raw probabilities (array).
+    :param thresh: Threshold for positive classification (int).
+    :param max_s: Maximum number of positive subject classifications (int).
+    :param max_e: Maximum number of positive emotion classifications.
+    :return:
+    """
     labels = {'afraid': {'threshold': 0.2, 'type': 'emotion', 'valence': 'negative'},
               'angry': {'threshold': 0.1, 'type': 'emotion', 'valence': 'negative'},
               'anxious': {'threshold': 0.05, 'type': 'emotion', 'valence': 'negative'},
@@ -562,13 +568,14 @@ def create_output(predictions, thresh=.2, max_s=1, max_e=4):
               'school': {'threshold': 0.09, 'type': 'subject'},
               'sleep': {'threshold': 0.28, 'type': 'subject'},
               'work': {'threshold': 0.23, 'type': 'subject'}}
+
     predictions_s, predictions_e = [], []
     for i, prediction in enumerate(predictions):
         entry_s, entry_e = [], []
         valences = {'positive': 0, 'negative': 0, 'neutral': 0}
         for j, pred in enumerate(prediction['probabilities']):
             label = list(labels.keys())[j]
-            threshold = labels[label]['threshold'] if thresh == 'auto' else thresh
+            threshold = labels[label]['threshold'] if thresh == None else thresh
             if labels[label]['type'] == 'emotion':
                 valences[labels[label]['valence']] += pred
             if pred >= threshold:

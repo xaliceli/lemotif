@@ -22,6 +22,7 @@ class SemanticSim():
         self.lemotif_vectorized = self.model(' '.join(self.lemotif['subjects'] + self.lemotif['emotions']))
 
     def clean_text(self, text):
+        """Lemmatize and omit punctuation and stopwords."""
         stop_words = spacy.lang.en.stop_words.STOP_WORDS
         punctuations = string.punctuation
 
@@ -32,13 +33,13 @@ class SemanticSim():
         return list(set(tokens))
 
     def compare_word(self, text):
+        """Return closest Lemotif label for each token."""
         tokens = self.model(text)
         best = {}
         for token in tokens:
             best_score, best_match = float('-inf'), None
             for concept in self.lemotif_vectorized:
                 current_score = token.similarity(concept)
-                print(token, concept, current_score)
                 if current_score > best_score:
                     best_score, best_match = current_score, concept
             best[token.text] = (best_match, best_score)
@@ -46,6 +47,7 @@ class SemanticSim():
         return best
 
     def evaluate_text(self, text):
+        """Calculate sum of similarities across all Lemotif labels."""
         tfidf_vectorizer = TfidfVectorizer(tokenizer=self.clean_text)
         frequencies = tfidf_vectorizer.fit_transform([text])
         features = tfidf_vectorizer.get_feature_names()
@@ -58,11 +60,3 @@ class SemanticSim():
                 evaluation[match] = score*frequencies.data[idx]
 
         return sorted(evaluation.items(), key=lambda x: x[1], reverse=True)
-
-
-if __name__ == '__main__':
-    # print(SemanticSim().compare_word('scared depressed fine elated upbeat run buddies faith'))
-    print(SemanticSim('en_core_web_lg').evaluate_text(
-        'Today was a terrible day. Work was awful and terrible and stressful. I feel extremely sad and defeated.'))
-    print(SemanticSim('/Users/alice/School/vil-lemotif/lemotif/data/conceptnet').evaluate_text(
-        'Today was a terrible day. Work was awful and terrible and stressful. I feel extremely sad and defeated.'))

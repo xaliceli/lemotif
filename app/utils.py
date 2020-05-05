@@ -1,6 +1,6 @@
 """
 utils.py
-Helpers
+Helpers.
 """
 
 from flask import request
@@ -11,6 +11,7 @@ from io import BytesIO
 
 
 def set_args():
+    """Default arguments for app functions."""
     args = {}
 
     # Show settings pane
@@ -53,6 +54,7 @@ def set_args():
 
     # WATERCOLORS ARGS
     args['intensity_sd'] = .2
+    args['model_dir'] = 'models/ae'
 
     # If True, randomly select topic for border shape as opposed to using square.
     args['border_shape'] = True
@@ -63,8 +65,6 @@ def set_args():
     # Summary motif
     args['summary'] = False
 
-    # AE specific args
-    args['model_dir'] = 'models/ae'
 
     values = {
         'text1': '',
@@ -75,7 +75,9 @@ def set_args():
 
     return args, values
 
+
 def get_args():
+    """Get arguments from form inputs and process to expected format."""
     args, values = set_args()
     int_params = ['rot_degree', 'line_width', 'line_width_tile', 'n_circles', 'passes', 'step_size', 'n_lines', 'line_width_string']
 
@@ -97,7 +99,9 @@ def get_args():
 
     return args, values
 
+
 def img_to_str(img):
+    """Format image array into byte string."""
     image = Image.fromarray(img.astype("uint8")[..., [2, 1, 0]])
     rawBytes = BytesIO()
     image.save(rawBytes, 'PNG')

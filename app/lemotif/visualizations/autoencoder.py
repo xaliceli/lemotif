@@ -1,11 +1,9 @@
 """
 autoencoder.py
-WikiArt trained autoencoder
+WikiArt trained autoencoder.
 """
-from itertools import product
 
 import numpy as np
-import os
 import tensorflow as tf
 
 from lemotif.visualizations.utils import fill_color, bg_mask, fill_canvas, apply_shape, add_labels
@@ -19,8 +17,25 @@ with session.as_default():
         enc_model._make_predict_function()
         dec_model._make_predict_function()
 
-def ae(topics, emotions, icons, colors, size, in_size=16, background=(255, 255, 255), model_dir='',
+def ae(topics, emotions, icons, colors, size, in_size=16, background=(255, 255, 255),
        border_shape=False, border_color=None, text=True, intensity_sd=.2, **kwargs):
+    """
+    Autoencoder visualization.
+
+    :param topics: Topics to use (list).
+    :param emotions: Emotions to use (list).
+    :param icons: Shape icons (dict).
+    :param colors: Emotion colors (dict).
+    :param size: Size of output (tuple).
+    :param in_size: Size of input, assuming square shape (int).
+    :param background: Background color in RGB (tuple).
+    :param border_shape: Whether to apply icon shape as border (bool).
+    :param border_color: Border color in RGB (tuple).
+    :param text: Include text labels below visualization (bool).
+    :param intensity_sd: Standard deviation for random color intensity adjustment (float).
+    :param kwargs: Additional arguments (dict).
+    :return: Visualization (array).
+    """
     if len(topics) == 0 or len(emotions) == 0:
         return None
     elif topics[0] is None:

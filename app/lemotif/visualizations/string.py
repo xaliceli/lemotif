@@ -14,6 +14,23 @@ from lemotif.visualizations.utils import apply_shape, add_labels, shape_bool_mas
 
 def string(topics, emotions, icons, colors, size, background=(255, 255, 255), n_lines=150, line_width_string=5,
            border_shape=True, border_color=None, text=True, offset_sd=0.2, **kwargs):
+    """
+    String doll visualization.
+
+    :param topics: Topics to use (list).
+    :param emotions: Emotions to use (list).
+    :param icons: Shape icons (dict).
+    :param colors: Emotion colors (dict).
+    :param background: Background color in RGB (tuple).
+    :param border_shape: Whether to apply icon shape as border (bool).
+    :param border_color: Border color in RGB (tuple).
+    :param text: Include text labels below visualization (bool).
+    :param n_lines: Number of lines drawn (int).
+    :param line_width_string: Width of lines (int).
+    :param offset_sd: Standard deviation of offset for arc (float).
+    :param kwargs: Additional arguments (dict).
+    :return: Visualization (array).
+    """
     if len(topics) == 0 or len(emotions) == 0:
         return None
     elif topics[0] is None:

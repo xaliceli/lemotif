@@ -14,6 +14,23 @@ from lemotif.visualizations.utils import apply_shape, add_labels
 def tiles(topics, emotions, icons, colors, size, background=(255, 255, 255),
           border_shape=True, border_color=None, text=True,
           line_width_tile=1, step_size=10, dir_prob=0.5, **kwargs):
+    """
+    Tile visualization.
+
+    :param topics: Topics to use (list).
+    :param emotions: Emotions to use (list).
+    :param icons: Shape icons (dict).
+    :param colors: Emotion colors (dict).
+    :param background: Background color in RGB (tuple).
+    :param border_shape: Whether to apply icon shape as border (bool).
+    :param border_color: Border color in RGB (tuple).
+    :param text: Include text labels below visualization (bool).
+    :param line_width_tile: Line width (int).
+    :param step_size: Step size separating lines (int).
+    :param dir_prob: Probability of choosing first direction (float).
+    :param kwargs: Additional arguments (dict).
+    :return: Visualization (array).
+    """
     if len(topics) == 0 or len(emotions) == 0:
         return None
     elif topics[0] is None:

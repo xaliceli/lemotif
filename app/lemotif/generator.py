@@ -22,7 +22,7 @@ from lemotif.visualizations.autoencoder import ae as watercolors
 
 def load_assets(input_dir='../assets'):
     """
-    Loads icons and colors.
+    Load icons and colors.
 
     Args:
         input_dir (str): Folder where assets reside.
@@ -41,7 +41,7 @@ def load_assets(input_dir='../assets'):
 def generate_visual(icons, colors, topics, emotions, algorithm, out_dir=None, size=(500, 500), summary=False,
                     concat=True, all_styles=None, **args):
     """
-    Generates visualization based on inputs.
+    Generate visualization based on inputs.
 
     Args:
         icons (dict): Dictionary of icons.

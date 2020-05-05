@@ -1,6 +1,6 @@
 """
 autoencoder.py
-Autoencoder model
+Autoencoder-style image generation model.
 """
 import glob
 import os
@@ -44,6 +44,7 @@ class AutoEncoderGAN():
             self.gauss_kernel = gauss_kernel(kwargs['blur_kernel'])
 
     def init_models(self, in_size, out_size, disc_size, lr, b1, b2):
+        """Define encoder, decoder, and discriminator models if using plus optimizers."""
         encoder_model = getattr(models, self.enc_model)
         decoder_model = getattr(models, self.dec_model)
 
@@ -64,6 +65,7 @@ class AutoEncoderGAN():
             self.disc_optimizer = tf.compat.v1.train.AdamOptimizer(learning_rate=lr*4, beta1=b1, beta2=b2)
 
     def train_step(self, img_in, true_img, out_size, disc_size):
+        """Make one update step."""
         with tf.GradientTape() as gen_tape, tf.GradientTape() as disc_tape:
             gen_z = self.encoder(img_in, training=True)
             gen_img = self.decoder(gen_z, training=True)
@@ -107,6 +109,7 @@ class AutoEncoderGAN():
             return (l2_loss)
 
     def train(self, train_data, in_size, out_size, disc_size, iterations, lr, save_dir, b1, b2, save_int, **kwargs):
+        """Train over specified number of iterations per settings."""
         if not os.path.isdir(save_dir): os.mkdir(save_dir)
         self.init_models(in_size, out_size, disc_size, lr, b1, b2)
         gen_steps, disc_steps = self.load_saved_models(save_dir)
@@ -137,14 +140,14 @@ class AutoEncoderGAN():
 
 
     def generator_loss(self, generated_disc):
-        # WGAN-GP loss: https://arxiv.org/pdf/1704.00028.pdf
+        """Gen loss from WGAN-GP loss: https://arxiv.org/pdf/1704.00028.pdf"""
         # Negative so that gradient descent maximizes critic score received by generated output
         return -tf.reduce_mean(generated_disc)
 
     def discriminator_loss(self, real_imgs, generated_imgs, real_disc, generated_disc, gp_lambda=10, epsilon=0.001):
-        # WGAN-GP loss: https://arxiv.org/pdf/1704.00028.pdf
-        # Difference between critic scores received by generated output vs real video
-        # Lower values mean that the real video samples are receiving higher scores, therefore
+        """Disc loss from WGAN-GP loss: https://arxiv.org/pdf/1704.00028.pdf"""
+        # Difference between critic scores received by generated output vs real image
+        # Lower values mean that the real image samples are receiving higher scores, therefore
         # gradient descent maximizes discriminator accuracy
         out_size = real_imgs.get_shape().as_list()
         d_cost = tf.reduce_mean(generated_disc) - tf.reduce_mean(real_disc)
@@ -169,6 +172,7 @@ class AutoEncoderGAN():
         return d_cost + gradient_penalty + epsilon_penalty
 
     def l2_loss(self, gen_img, true_img):
+        """L2 loss."""
         if self.loss_weights['l2_loss_size'] != gen_img.get_shape().as_list()[1]:
             gen_img = tf.image.resize(gen_img,
                                       (self.loss_weights['l2_loss_size'], self.loss_weights['l2_loss_size']),
@@ -181,17 +185,20 @@ class AutoEncoderGAN():
         return tf.reduce_mean(tf.squared_difference(true_img, gen_img))
 
     def generate(self, source_imgs, epoch, save_dir):
+        """Inference pass to produce and save image."""
         generated_imgs = self.decoder(self.encoder(source_imgs, training=False), training=False)
 
         self.save_img(generated_imgs, save_dir, name=str(generated_imgs[0].shape[-2]) + '_' + str(epoch) + '_')
 
     def save_img(self, img_tensor, save_dir, name):
+        """Save out image as JPG."""
         img = tf.cast(255 * (img_tensor + 1)/2, tf.uint8)
         for i, ind_img in enumerate(img):
             encoded = tf.image.encode_jpeg(ind_img)
             tf.write_file(os.path.join(save_dir, name + str(i) + '.jpg'), encoded)
 
     def save_learning_curve(self, save_dir):
+        """Save out losses as plot."""
         plt.plot(range(len(self.gen_loss_curve)), self.gen_loss_curve, color='g', linewidth='1')
         plt.xlabel("Iterations")
         plt.ylabel("Generator Loss")
@@ -206,6 +213,7 @@ class AutoEncoderGAN():
             plt.clf()
 
     def load_saved_models(self, save_dir):
+        """Load models from checkpoints."""
         gen_checkpoints = glob.glob(os.path.join(save_dir, 'encoder-*.h5'))
         max_gen, max_disc = 0, 0
         if len(gen_checkpoints) > 0:
@@ -222,6 +230,7 @@ class AutoEncoderGAN():
         return max_gen, max_disc
 
     def save_models(self, save_dir, current_steps, gen_steps, disc_steps):
+        """Save models as checkpoints."""
         self.encoder.save(os.path.join(save_dir, 'encoder-' + str(gen_steps + current_steps) + '.h5'))
         self.decoder.save(os.path.join(save_dir, 'decoder-' + str(gen_steps + current_steps) + '.h5'))
         if self.disc_model:

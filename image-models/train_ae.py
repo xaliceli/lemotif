@@ -1,6 +1,6 @@
 """
-train.py
-Train model.
+train_ae.py
+Train AE-style model.
 """
 import os
 import tensorflow as tf
