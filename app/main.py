@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, session
+from flask import Flask, render_template, request, session, abort, make_response, jsonify
 import numpy as np
 
 import utils
@@ -10,6 +10,11 @@ app = Flask(__name__, template_folder='templates', static_folder='static')
 app.config.from_object(Config())
 
 parser = extract_labels.BERTClassifier('models/bert', None, 29, batch_size=3)
+
+@app.errorhandler(400)
+def not_found(error):
+    return make_response(jsonify( { 'error': 'Bad request' } ), 400)
+
 
 @app.route('/', methods=['GET', 'POST'])
 def home():
@@ -46,21 +51,21 @@ def home():
         args, values = utils.get_args()
 
         error, images_encoded = None, []
-        # try:
-        motifs, combined = generator.generate_visual(icons=subjects,
-                                                     colors=emotions,
-                                                     topics=subjects_render,
-                                                     emotions=emotions_render,
-                                                     out_dir=None,
-                                                     **args)
-        for motif in motifs:
-            if motif is None:
-                images_encoded.append('')
-            else:
-                images_encoded.append(utils.img_to_str(motif[:-20, ...]))
-        combined_encoded = utils.img_to_str(combined)
-        # except:
-        #     error = 'Sorry, there was an error generating motifs for the provided inputs. Please try again.'
+        try:
+            motifs, combined = generator.generate_visual(icons=subjects,
+                                                         colors=emotions,
+                                                         topics=subjects_render,
+                                                         emotions=emotions_render,
+                                                         out_dir=None,
+                                                         **args)
+            for motif in motifs:
+                if motif is None:
+                    images_encoded.append('')
+                else:
+                    images_encoded.append(utils.img_to_str(motif[:-20, ...]))
+            combined_encoded = utils.img_to_str(combined)
+        except:
+            error = 'Sorry, there was an error generating motifs for the provided inputs. Please try again.'
 
         subjects_render = [['topic unknown'] if x[0] is None else x for x in subjects_render]
         subjects_render = [x for i, x in enumerate(subjects_render) if all_text[i][0] != '']
@@ -77,6 +82,63 @@ def home():
                                emot_labels=emotions_render,
                                subj_labels=subjects_render,
                                n_inputs=3)
+
+
+@app.route('/api/v0.0/create', methods=['POST'])
+def api_call():
+    # Expects calls in the following format:
+    # {'key': api_key,
+    #  'text': [..., ..., ...],
+    #  'algorithm': 'watercolors',
+    #  individual style args...
+    #  ...
+    #  }
+
+    if not request.json or not 'key' in request.json or request.json['key'] != app.config['API_KEY']:
+        abort(400)
+
+    subjects, emotions = generator.load_assets('static/images/icons')
+
+    all_text = request.json.get('text', [])
+    subjects_render, emotions_render = parser.predict(all_text)
+    subjects_render = [x if all_text[i][0] != '' else [''] for i, x in enumerate(subjects_render)]
+
+    args, _ = utils.set_args()
+    spec_args = request.json.get('args', {})
+    for arg, val in spec_args.items():
+        args[arg] = val
+
+    error, images_encoded = None, []
+    try:
+        motifs, combined = generator.generate_visual(icons=subjects,
+                                                     colors=emotions,
+                                                     topics=subjects_render,
+                                                     emotions=emotions_render,
+                                                     out_dir=None,
+                                                     **args)
+        for motif in motifs:
+            if motif is None:
+                images_encoded.append('')
+            else:
+                images_encoded.append(utils.img_to_str(motif[:-20, ...]))
+        combined_encoded = utils.img_to_str(combined)
+    except:
+        error = 'Sorry, there was an error generating motifs for the provided inputs. Please try again.'
+        return jsonify({'error': error})
+
+    subjects_render = [['topic unknown'] if x[0] is None else x for x in subjects_render]
+    subjects_render = [x for i, x in enumerate(subjects_render) if all_text[i][0] != '']
+    emotions_render = [x for i, x in enumerate(emotions_render) if all_text[i][0] != '']
+
+    outputs = {
+        'topics': subjects_render,
+        'emotions': emotions_render,
+        'motifs': images_encoded,
+        'combined_motifs': combined_encoded
+    }
+
+    return jsonify(outputs)
+
 
 if __name__ == '__main__':
     # This is used when running locally only. When deploying to Google App
