@@ -100,12 +100,12 @@ def get_args():
     return args, values
 
 
-def img_to_str(img):
+def img_to_str(img, web=True):
     """Format image array into byte string."""
     image = Image.fromarray(img.astype("uint8")[..., [2, 1, 0]])
     rawBytes = BytesIO()
     image.save(rawBytes, 'PNG')
     rawBytes.seek(0)
     data = b64encode(rawBytes.read())
-    data_url = 'data:image/png;base64,{}'.format(quote(data))
+    data_url = 'data:image/png;base64,{}'.format(quote(data)) if web else data.decode()
     return data_url

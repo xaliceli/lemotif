@@ -120,8 +120,8 @@ def api_call():
             if motif is None:
                 images_encoded.append('')
             else:
-                images_encoded.append(utils.img_to_str(motif[:-20, ...]))
-        combined_encoded = utils.img_to_str(combined)
+                images_encoded.append(utils.img_to_str(motif[:-20, ...], web=False))
+        combined_encoded = utils.img_to_str(combined, web=False)
     except:
         error = 'Sorry, there was an error generating motifs for the provided inputs. Please try again.'
         return jsonify({'error': error})
