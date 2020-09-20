@@ -2,7 +2,7 @@
 
 [![DOI](https://zenodo.org/badge/183519985.svg)](https://zenodo.org/badge/latestdoi/183519985)
 
-[Demo](http://lemotif.cloudcv.org) | [Paper](https://arxiv.org/abs/1903.07766)
+[Demo](http://lemotif.cloudcv.org) | [Paper](https://arxiv.org/abs/1903.07766) | [iOS Version](https://github.com/irenelee5645/Lemotif_IOS_APP)
 
 We present Lemotif, an integrated natural language processing and image generation system that uses machine learning to (1) parse a text-based input journal entry describing the user’s day for salient themes and emotions and (2) visualize the detected themes and emotions in creative and appealing image motifs. Synthesizing approaches from artificial intelligence and psychology, Lemotif acts as an affective visual journal, encouraging users to regularly write and reflect on their daily experiences through visual reinforcement. 
 
