@@ -108,10 +108,12 @@ def api_call():
     for arg, val in spec_args.items():
         args[arg] = val
 
+    algo = request.json['algorithm']
     error, images_encoded = None, []
     try:
         motifs, combined = generator.generate_visual(icons=subjects,
                                                      colors=emotions,
+                                                     algorithm=algo,
                                                      topics=subjects_render,
                                                      emotions=emotions_render,
                                                      out_dir=None,
